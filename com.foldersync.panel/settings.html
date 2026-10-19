@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <title>Folder Sync — Settings</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="setw">
+    <div class="mtitle">
+      <span class="spark" aria-hidden="true">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>
+      </span>
+      SETTINGS
+    </div>
+
+    <div class="tabs" role="tablist">
+      <button type="button" class="tab active" data-tab="general" data-tip="tabGeneral">Chung</button>
+      <button type="button" class="tab" data-tab="ext" data-tip="allowed">Loại file</button>
+      <button type="button" class="tab" data-tab="ign" data-tip="ignored">Folder bỏ qua</button>
+    </div>
+
+    <!-- tab Chung -->
+    <div class="tpane show" id="p-general">
+      <label class="check" data-tip="notifications"><input type="checkbox" id="g-notify" /> Hiện thông báo trong Events</label>
+    </div>
+
+    <!-- tab Loại file -->
+    <div class="tpane" id="p-ext">
+      <div class="search"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="text" id="ext-q" placeholder="Tìm…" spellcheck="false" /></div>
+      <div class="lhead"><span>LOẠI FILE ĐƯỢC IMPORT · <b id="ext-n">0</b></span><button type="button" class="btn sm" id="ext-add" data-tip="addExt">Thêm</button></div>
+      <div class="list" id="ext-list"></div>
+      <div class="lfoot"><button type="button" class="linkbtn" id="ext-reset" data-tip="reset">Khôi phục mặc định</button><span class="msg" id="ext-msg"></span></div>
+    </div>
+
+    <!-- tab Folder bỏ qua -->
+    <div class="tpane" id="p-ign">
+      <div class="search"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="text" id="ign-q" placeholder="Tìm…" spellcheck="false" /></div>
+      <div class="lhead"><span>TÊN FOLDER BỎ QUA · <b id="ign-n">0</b></span><button type="button" class="btn sm" id="ign-add" data-tip="addIgn">Thêm</button></div>
+      <div class="list" id="ign-list"></div>
+      <div class="lfoot"><button type="button" class="linkbtn" id="ign-reset" data-tip="reset">Khôi phục mặc định</button><span class="msg" id="ign-msg"></span></div>
+    </div>
+
+    <div class="sfoot">
+      <span class="mnote" id="dirty-note"></span>
+      <div class="mright">
+        <button type="button" class="btn" id="s-cancel" data-tip="cancelSettings">Huỷ</button>
+        <button type="button" class="btn primary" id="s-ok" data-tip="okSettings">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/lib/CSInterface.js"></script>
+  <script src="js/panel/preview.js"></script>
+  <script src="js/panel/common.js"></script>
+  <script src="js/panel/tips.js"></script>
+  <script src="js/panel/settingswin.js"></script>
+</body>
+</html>

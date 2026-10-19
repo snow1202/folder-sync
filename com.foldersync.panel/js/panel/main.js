@@ -1,5 +1,5 @@
 // Folder Sync — panel chính: WATCH / SYNC / 📁 / ⚙, dòng trạng thái, kéo-thả.
-/* global FS, FS_TIPS, FS_SETTINGS */
+/* global FS, FS_TIPS */
 (function () {
   var C = FS.load('js/core/constants.js');
   var store = FS.load('js/core/config.js').createStore();
@@ -39,14 +39,33 @@
   $('b-cancel').addEventListener('click', function () { FS.send(C.EVENTS.COMMAND, { cmd: 'abort' }); });
 
   // ---------------------------------------------------------------- 📁 và ⚙
-  $('b-folders').addEventListener('click', function () {
+  $('b-folders').addEventListener('click', function () { openManager(); });
+  function openSettings() {
+    if (FS.isCEP) FS.openExtension(C.EXT_IDS.SETTINGS);
+    else window.open('settings.html', 'set', 'width=480,height=580');
+  }
+  function openManager() {
     if (FS.isCEP) FS.openExtension(C.EXT_IDS.MANAGER);
     else window.open('manager.html', 'mgr', 'width=880,height=560');
-  });
-  $('b-gear').addEventListener('click', function () { FS_SETTINGS.fill(); show('v-settings'); });
-  $('s-back').addEventListener('click', function () { show('v-main'); });
-  function show(id) {
-    ['v-main', 'v-settings'].forEach(function (v) { $(v).classList.toggle('show', v === id); });
+  }
+  $('b-gear').addEventListener('click', openSettings);
+
+  // Menu ☰ của panel (giống Watchtower): Settings…, Watch folders…, phiên bản.
+  if (FS.isCEP) {
+    try {
+      FS.cs.setPanelFlyoutMenu('<Menu>' +
+        '<MenuItem Id="fs-settings" Label="Cài đặt…" Enabled="true" Checked="false"/>' +
+        '<MenuItem Id="fs-folders" Label="Danh sách folder…" Enabled="true" Checked="false"/>' +
+        '<MenuItem Label="---" />' +
+        '<MenuItem Id="fs-ver" Label="Folder Sync ' + C.VERSION + '" Enabled="false" Checked="false"/>' +
+        '</Menu>');
+      FS.cs.addEventListener('com.adobe.csxs.events.flyoutMenuClicked', function (ev) {
+        var id = ev && ev.data && (ev.data.menuId || ev.data);
+        if (typeof id === 'string' && id.indexOf('menuId') >= 0) { try { id = JSON.parse(id).menuId; } catch (e) { /* giữ nguyên */ } }
+        if (id === 'fs-settings') openSettings();
+        if (id === 'fs-folders') openManager();
+      });
+    } catch (e) { /* host không hỗ trợ flyout menu */ }
   }
 
   // ---------------------------------------------------------------- trạng thái
