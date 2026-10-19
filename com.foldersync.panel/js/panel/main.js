@@ -8,6 +8,8 @@
   var lastStatus = null;
 
   FS_TIPS.install();
+  // Đóng panel chính → báo cửa sổ Watch folders đóng theo.
+  window.addEventListener('beforeunload', function () { FS.send(C.EVENTS.PANEL_CLOSED, {}); });
   $('ver').textContent = 'V' + C.VERSION;
 
   // ---------------------------------------------------------------- WATCH
