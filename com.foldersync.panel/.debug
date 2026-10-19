@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionList>
+  <Extension Id="com.foldersync.panel.main">
+    <HostList><Host Name="PPRO" Port="8191"/></HostList>
+  </Extension>
+  <Extension Id="com.foldersync.panel.manager">
+    <HostList><Host Name="PPRO" Port="8192"/></HostList>
+  </Extension>
+  <Extension Id="com.foldersync.panel.engine">
+    <HostList><Host Name="PPRO" Port="8193"/></HostList>
+  </Extension>
+</ExtensionList>
