@@ -21,3 +21,31 @@ Chạy trước mỗi bản phát hành. Ghi ✅/❌ + ghi chú. Log engine: `~/
 | 15 | Project kiểu SAMX đã có sẵn cây bin + vài file: chọn bin `Sources` › 📁 › **Liên kết bin đang chọn** | Folder được suy ra đúng, các bin con được liên kết; chỉ import file còn thiếu, **không** tạo bin trùng. |
 | 16 | Folder ~4.000 file: thêm vào, bấm **Huỷ** khi đang import | Thanh tiến trình chạy; Huỷ dừng sau đợt hiện tại; SYNC lại → import nốt phần còn lại, không trùng. |
 | 17 | Xoá một clip trong Premiere (file vẫn còn trên ổ), bấm SYNC | Clip quay lại (giống Watchtower) — đây là hành vi đúng. |
+
+## Kết quả lần chạy 2026-10-19 (v1.0.0, nhánh `v1`)
+
+Máy: macOS, Premiere Pro 2026 (26.5.2), Google Drive for desktop. Project: Veracomfort CC 2026, SoftyGrace CC 2026.
+
+| # | Kết quả | Ghi chú |
+|---|---|---|
+| 1 | ✅ | Engine ẩn tự chạy. Một lần engine mất kết nối ngay khi mở Premiere → đã thêm tự mở lại + engine dự phòng trong panel. |
+| 2 | ⚠️ Một phần | Cây bin + import đủ (folder Drive `v23.x`, `FolderSync-Test`), thư mục rỗng/bin con đúng. **Chưa kiểm** việc tạo bin *bên trong bin đang chọn* — các lần thả đều vào gốc project. |
+| 3 | ✅ | Folder trên Drive: file mới vào trong ~5–10 s (quét 5 s + chờ file đứng yên); ngưỡng "≤ 3–5 s" là cho ổ cục bộ. |
+| 4 | ✅ | 3 file đã import tay từ trước không bị import lại. |
+| 5 | ⏳ Chưa thử | Cần đồng nghiệp up file từ máy khác. |
+| 6 | ✅ | File WAV 500 MB ghi dần 40 s (ổ cục bộ): không import khi đang ghi, import đúng 1 lần ~15 s sau khi ghi xong. |
+| 7 | ✅ | `.xyz`, `.prproj`, `untitled folder`, `.DS_Store`, `~$tam.docx` bị bỏ qua; PSD nhiều layer import không hiện hộp thoại. |
+| 8 | ✅ | Panel đóng (cổng debug panel không phản hồi), engine vẫn import. |
+| 9 | ✅ | Đổi tên + kéo bin con ra gốc → file mới vào đúng bin đã đổi; xoá bin gốc + SYNC → bin được tạo lại, bin đã di chuyển không bị trùng. |
+| 10 | ⚠️ Một phần | Kiểm bằng cách **đổi tên folder** → chấm đỏ + "1 folder offline". Chưa thử rút ổ ngoài / tắt mạng rồi cắm lại. |
+| 11 | ✅ | 2 project cùng mở, file vào đúng project, **kể cả project không active** (spike đã xác nhận). Một lần dòng đích hiện sai project, không tái hiện được khi đo lại. |
+| 12 | ✅ | Tên tiếng Việt dạng NFC và NFD (trên My Drive) đều import đúng 1 lần; SYNC lần 2 không trùng. |
+| 13 | ✅ | Relink `v20.x` → `v20.x Backup`: 7 clip offline được nối lại, không trùng. |
+| 14 | ⚠️ Một phần | Giả lập bằng cách đổi tiền tố Drive trong config → tự relink về Drive máy này (lần đo mất ~30 s; đã sửa xuống ~5 s nhưng **chưa đo lại trong Premiere**). Chưa kiểm phần nối lại clip offline khi tự relink (cần project mở từ máy khác). |
+| 15 | ✅ | Liên kết bin `New 6` có sẵn: suy đúng folder, không tạo bin trùng, chỉ import file thiếu. |
+| 16 | ✅ | 4.000 PNG: thanh tiến trình `x / 4.000`, Huỷ dừng giữa chừng, SYNC import nốt; cuối cùng đúng 4.000 item, không trùng. |
+| 17 | ✅ | Xoá `ok.wav` trong Premiere + SYNC → clip quay lại. |
+
+**Tổng:** 13 ✅ · 3 ⚠️ một phần (2, 10, 14) · 1 ⏳ chưa thử (5).
+
+**Lỗi tìm thấy trong lúc test và đã sửa:** cửa sổ Watch folders hiện thừa trong menu Extensions · folder bị gán nhầm project khi mở nhiều project (`app.project` không tin được) · engine ẩn mất kết nối lúc mở Premiere · lưu ở cửa sổ quản lý làm mất folder vừa thả từ panel · hộp chọn folder khi relink mở sai chỗ · đường dẫn Drive của máy khác bị coi là ổ cục bộ (tự relink chậm, spam log) · đóng panel không đóng cửa sổ Watch folders.
