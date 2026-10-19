@@ -69,7 +69,8 @@
         var cfg = store.load();
         Object.keys(cfg.projects).forEach(function (k) {
           cfg.projects[k].entries.forEach(function (e) {
-            if (e.parentId === null && modeFor(e.path) === 'watch') want[e.path.toLowerCase()] = e.path;
+            // folder offline không gắn fs.watch được (ENOENT) — engine tự kiểm lại theo nhịp quét
+            if (e.parentId === null && modeFor(e.path) === 'watch' && fs.existsSync(e.path)) want[e.path.toLowerCase()] = e.path;
           });
         });
       }

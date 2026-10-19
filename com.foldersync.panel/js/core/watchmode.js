@@ -26,6 +26,8 @@ function modeFor(absPath, mounts, home) {
   for (const p of remotePrefixes) {
     if (isUnder(absPath, p) || pathkey(absPath) === pathkey(p)) return 'poll';
   }
+  // Đường dẫn Drive/cloud của máy hoặc tài khoản KHÁC (project mở từ máy đồng nghiệp).
+  if (/^\/Users\/[^/]+\/(Library\/CloudStorage|Google Drive)(\/|$)/.test(String(absPath).normalize('NFC'))) return 'poll';
   let best = null;
   for (const m of mounts || []) {
     if (m.mountPoint === '/') continue;

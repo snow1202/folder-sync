@@ -163,7 +163,8 @@ function createEngine(opts) {
       const now = o.now();
       if (!flags.manual && !flags.force) {
         const mode = o.modeFor(root.path);
-        const gap = mode === 'poll' || R.pending.has(root.id) ? C.POLL_REMOTE_MS : C.POLL_LOCAL_MS;
+        const fast = mode === 'poll' || R.pending.has(root.id) || R.state[root.id] === 'offline';
+        const gap = fast ? C.POLL_REMOTE_MS : C.POLL_LOCAL_MS;
         const due = dirty.has(pathkey(root.path)) || !lastScan[root.id] || now - lastScan[root.id] >= gap;
         if (!due) continue;
       }

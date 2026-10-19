@@ -26,6 +26,9 @@ test('modeFor: Drive/mạng/ExFAT → poll, ổ thường → watch', () => {
   assert.equal(modeFor('/Volumes/share/x', m, home), 'poll');
   assert.equal(modeFor('/Volumes/Fast/x', m, home), 'watch');
   assert.equal(modeFor('/Users/u/Movies/x', m, home), 'watch');
+  // đường dẫn Drive của máy/tài khoản KHÁC (project mở từ máy đồng nghiệp) vẫn là Drive
+  assert.equal(modeFor('/Users/dongnghiep/Library/CloudStorage/GoogleDrive-x@y.com/Shared drives/A', m, home), 'poll');
+  assert.equal(modeFor('/Users/khac/Google Drive/My Drive/A', m, home), 'poll');
 });
 
 test('splitDrivePath nhận 3 kiểu tiền tố + bản Việt hoá', () => {
