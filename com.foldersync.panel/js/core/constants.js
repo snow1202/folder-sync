@@ -47,6 +47,7 @@ const EVENTS = {
   STATUS: 'com.foldersync.status',
   COMMAND: 'com.foldersync.command',
   PROGRESS: 'com.foldersync.progress',
+  REPLY: 'com.foldersync.reply',
 };
 
 module.exports = {
