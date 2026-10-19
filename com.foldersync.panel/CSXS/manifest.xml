@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ExtensionManifest Version="7.0" ExtensionBundleId="com.foldersync.panel"
+    ExtensionBundleVersion="1.0.0" ExtensionBundleName="Folder Sync"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <ExtensionList>
+    <Extension Id="com.foldersync.panel.main" Version="1.0.0" />
+    <Extension Id="com.foldersync.panel.manager" Version="1.0.0" />
+    <Extension Id="com.foldersync.panel.engine" Version="1.0.0" />
+  </ExtensionList>
+  <ExecutionEnvironment>
+    <HostList>
+      <Host Name="PPRO" Version="[14.0,99.9]" />
+    </HostList>
+    <LocaleList><Locale Code="All" /></LocaleList>
+    <RequiredRuntimeList>
+      <RequiredRuntime Name="CSXS" Version="9.0" />
+    </RequiredRuntimeList>
+  </ExecutionEnvironment>
+  <DispatchInfoList>
+    <!-- Panel chính: Window > Extensions > Folder Sync -->
+    <Extension Id="com.foldersync.panel.main">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./panel.html</MainPath>
+          <ScriptPath>./jsx/host.jsx</ScriptPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <UI>
+          <Type>Panel</Type>
+          <Menu>Folder Sync</Menu>
+          <Geometry>
+            <Size><Width>360</Width><Height>220</Height></Size>
+            <MinSize><Width>260</Width><Height>150</Height></MinSize>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+
+    <!-- Cửa sổ quản lý watch-folder (mở từ nút 📁) -->
+    <Extension Id="com.foldersync.panel.manager">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./manager.html</MainPath>
+          <ScriptPath>./jsx/host.jsx</ScriptPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <UI>
+          <Type>Modeless</Type>
+          <Menu>Folder Sync — Watch folders</Menu>
+          <Geometry>
+            <Size><Width>860</Width><Height>540</Height></Size>
+            <MinSize><Width>640</Width><Height>360</Height></MinSize>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+
+    <!-- Engine ẩn: tự chạy cùng Premiere, theo dõi folder + import -->
+    <Extension Id="com.foldersync.panel.engine">
+      <DispatchInfo>
+        <Resources>
+          <MainPath>./engine.html</MainPath>
+          <ScriptPath>./jsx/host.jsx</ScriptPath>
+          <CEFCommandLine>
+            <Parameter>--enable-nodejs</Parameter>
+            <Parameter>--mixed-context</Parameter>
+          </CEFCommandLine>
+        </Resources>
+        <Lifecycle>
+          <AutoVisible>false</AutoVisible>
+          <StartOn>
+            <Event>com.adobe.csxs.events.ApplicationActivate</Event>
+            <Event>applicationActivate</Event>
+          </StartOn>
+        </Lifecycle>
+        <UI>
+          <Type>Custom</Type>
+          <Geometry>
+            <Size><Width>1</Width><Height>1</Height></Size>
+          </Geometry>
+        </UI>
+      </DispatchInfo>
+    </Extension>
+  </DispatchInfoList>
+</ExtensionManifest>

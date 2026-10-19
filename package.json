@@ -1,0 +1,9 @@
+{
+  "name": "folder-sync",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Premiere Pro CEP panel: auto-sync disk folders (incl. Google Drive) into project bins",
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  }
+}
