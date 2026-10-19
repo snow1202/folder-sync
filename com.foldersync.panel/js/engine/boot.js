@@ -114,9 +114,11 @@
         }
         case 'afterRelink': return engine.afterRelink(d.docId, d.pairs || []);
         case 'selectedBin': {
-          var dd = await activeDocId();
-          var b = await host.getSelectedBin(dd);
-          return { docId: dd, nodeId: b.nodeId, name: b.name };
+          var list = await host.listProjects();
+          var act = list.filter(function (p) { return p.active; })[0] || list[0];
+          if (!act) throw new Error('Chưa mở project nào');
+          var b = await host.getSelectedBin(act.documentID);
+          return { docId: act.documentID, projectPath: act.path, projectName: act.name, nodeId: b.nodeId, name: b.name };
         }
         default: throw new Error('Lệnh lạ: ' + d.cmd);
       }

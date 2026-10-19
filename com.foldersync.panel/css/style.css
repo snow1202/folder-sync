@@ -115,6 +115,7 @@ textarea:focus{outline:none;border-color:var(--accent-line)}
 .fold.closed{transform:rotate(-90deg)}
 .fold.none{visibility:hidden}
 .path{font-family:var(--mono);font-size:10.5px;color:var(--txt-dim);cursor:pointer;border:1px solid transparent;border-radius:5px;padding:4px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;direction:rtl;text-align:left}
+.path .ltr{direction:ltr;unicode-bidi:isolate}
 .path:hover{border-color:var(--line);color:var(--txt)}
 .path.offline{border-color:var(--danger);color:#f0b3a6}
 .path.changed{border-color:var(--amber)}

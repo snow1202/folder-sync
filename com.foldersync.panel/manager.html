@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <title>Folder Sync — Watch folders</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="mgr" id="mgr">
+    <div class="mhead">
+      <div class="mtitle">
+        <span class="spark" aria-hidden="true">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h6l2 2h10v10H3z"/><path d="M12 12v5M9.5 14.5 12 12l2.5 2.5"/></svg>
+        </span>
+        WATCH FOLDERS
+      </div>
+      <span class="mnote">Thay đổi chỉ được lưu khi bấm OK</span>
+    </div>
+
+    <div class="table" id="table">
+      <div class="thead">
+        <div data-tip="state" style="text-align:center">●</div>
+        <div data-tip="name">Tên</div>
+        <div data-tip="path">Đường dẫn</div>
+        <div data-tip="sub" style="text-align:center">SUB</div>
+        <div data-tip="label">Label</div>
+        <div></div>
+      </div>
+      <div id="rows"></div>
+    </div>
+
+    <div class="mfoot">
+      <div class="mleft">
+        <button type="button" class="btn" id="b-add" data-tip="add">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 10v6M9 13h6"/></svg>
+          Thêm folder
+        </button>
+        <button type="button" class="btn" id="b-link" data-tip="link">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          Liên kết bin đang chọn
+        </button>
+        <span class="msg" id="msg"></span>
+      </div>
+      <div class="mright">
+        <button type="button" class="btn" id="b-cancel" data-tip="cancelMgr">Huỷ</button>
+        <button type="button" class="btn primary" id="b-ok" data-tip="ok">OK</button>
+      </div>
+    </div>
+
+    <div class="drop" id="drop">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 10v6M9 13l3 3 3-3"/></svg>
+      <div>Thả folder để thêm vào danh sách</div>
+    </div>
+  </div>
+
+  <script src="js/lib/CSInterface.js"></script>
+  <script src="js/panel/preview.js"></script>
+  <script src="js/panel/common.js"></script>
+  <script src="js/panel/tips.js"></script>
+  <script src="js/panel/manager.js"></script>
+</body>
+</html>

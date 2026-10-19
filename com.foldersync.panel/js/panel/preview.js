@@ -56,6 +56,7 @@
   window.FS_PREVIEW = {
     'js/core/constants.js': C,
     'js/core/tree.js': loadModule('js/core/tree.js'),
+    'js/core/merge.js': loadModule('js/core/merge.js'),
     'js/core/config.js': { createStore: function () { return store; } },
   };
 
