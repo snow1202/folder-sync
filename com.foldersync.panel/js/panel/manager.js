@@ -96,7 +96,7 @@
     p.title = e.path;
     p.setAttribute('data-tip', 'path');
     p.addEventListener('click', function () {
-      var picked = FS.pickFolders(false, 'Chọn lại folder cho "' + basename(e.path) + '"');
+      var picked = FS.pickFolders(false, 'Chọn lại folder cho "' + basename(e.path) + '"', e.path.replace(/\/[^/]*$/, ''));
       if (!picked.length) { if (!FS.isCEP) msg('Xem trước: không mở được hộp chọn folder', 'err'); return; }
       var r2 = T.relink(entries, e.id, picked[0]);
       e._changed = true;

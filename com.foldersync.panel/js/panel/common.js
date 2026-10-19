@@ -77,9 +77,20 @@
   }
 
   // Chọn folder (một hoặc nhiều) bằng hộp thoại hệ thống của CEP.
-  function pickFolders(multi, title) {
+  // initialPath: hộp thoại mở tại đây (lùi dần lên thư mục cha gần nhất còn tồn tại).
+  function pickFolders(multi, title, initialPath) {
     if (!isCEP || !window.cep || !window.cep.fs) return [];
-    var r = window.cep.fs.showOpenDialogEx(!!multi, true, title || 'Chọn folder', '');
+    var start = '';
+    if (initialPath) {
+      var fs = require('fs');
+      var path = require('path');
+      var cur = String(initialPath);
+      for (var i = 0; i < 12 && cur && cur !== '/'; i++) {
+        try { if (fs.statSync(cur).isDirectory()) { start = cur; break; } } catch (e) { /* chưa có */ }
+        cur = path.dirname(cur);
+      }
+    }
+    var r = window.cep.fs.showOpenDialogEx(!!multi, true, title || 'Chọn folder', start);
     return (r && r.data) ? r.data.map(function (p) { return decodeURI(String(p).replace(/^file:\/\//, '')); }) : [];
   }
 
