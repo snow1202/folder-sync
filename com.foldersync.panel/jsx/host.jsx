@@ -119,12 +119,31 @@ function FS_label(item, label) {
 
 // ---------------------------------------------------------------- hàm công khai
 
+// Project user đang làm việc. Khi mở nhiều project, app.project không đáng tin
+// (có thể vẫn trỏ project mở trước) → ưu tiên project chứa item đang chọn ở Project panel.
+function FS_activeDocId() {
+  var list = app.projects;
+  if (list.numProjects > 1) {
+    var sel = null;
+    try {
+      if (typeof app.getCurrentProjectViewSelection === 'function') { sel = app.getCurrentProjectViewSelection(); }
+    } catch (e) { sel = null; }
+    if (sel && sel.length) {
+      var id = '';
+      try { id = String(sel[0].nodeId); } catch (e2) { id = ''; }
+      for (var i = 0; id && i < list.numProjects; i++) {
+        if (FS_findNode(list[i], id)) { return String(list[i].documentID); }
+      }
+    }
+  }
+  try { return String(app.project.documentID); } catch (e3) { return ''; }
+}
+
 // → [{documentID, path, name, active}]
 function FS_listProjects(argsJson) {
   return FS_wrap(function () {
     var out = [];
-    var activeId = '';
-    try { activeId = String(app.project.documentID); } catch (e) {}
+    var activeId = FS_activeDocId();
     var list = app.projects;
     for (var i = 0; i < list.numProjects; i++) {
       var p = list[i];
@@ -160,7 +179,10 @@ function FS_getSelectedBin(argsJson) {
     } catch (e) { sel = null; }
     if (sel && sel.length) {
       for (var i = 0; i < sel.length; i++) {
-        if (FS_isBin(sel[i])) { return { nodeId: String(sel[i].nodeId), name: String(sel[i].name) }; }
+        // chỉ nhận bin thuộc ĐÚNG project này (vùng chọn có thể ở project khác)
+        if (FS_isBin(sel[i]) && (app.projects.numProjects < 2 || FS_findNode(project, sel[i].nodeId))) {
+          return { nodeId: String(sel[i].nodeId), name: String(sel[i].name) };
+        }
       }
     }
     return { nodeId: String(root.nodeId), name: '' };

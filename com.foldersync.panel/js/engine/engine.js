@@ -148,6 +148,10 @@ function createEngine(opts) {
     const cfg = store.load();
     const found = findProject(cfg, info);
     if (!found || !found.project.entries.length) return { files: 0, folders: 0, binNames: [] };
+    // documentID đổi (mở lại project) → ghi lại khoá mới để panel/manager khớp đúng.
+    if (store.load().projects[info.documentID] === undefined) {
+      store.update((c) => { findProject(c, info); });
+    }
     let entries = found.project.entries;
     const filters = settingsFilters();
     const result = { files: 0, folders: 0, binNames: [] };

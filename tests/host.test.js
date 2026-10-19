@@ -105,3 +105,16 @@ test('host.jsx không dùng từ khoá cấm ES3 làm định danh', () => {
     assert.ok(!new RegExp('(var|function|,|\\()\\s*' + w + '\\b|\\.' + w + '\\b|\\b' + w + '\\s*[:=](?!=)').test(src), w);
   }
 });
+
+test('mở 2 project: project active = project chứa bin đang chọn, không phải app.project', () => {
+  const pp = createPremiere();
+  pp.addProject('soft', '/p/SoftyGrace.prproj');           // app.project = project mở trước
+  const vera = pp.addProject('vera', '/p/Veracomfort.prproj');
+  const bin = vera.rootItem.createBin('Kling AI');
+  pp.select([bin]);
+  const list = pp.host('FS_listProjects');
+  assert.deepEqual(list.filter((p) => p.active).map((p) => p.documentID), ['vera']);
+  assert.deepEqual(pp.host('FS_getSelectedBin', 'vera'), { nodeId: bin.nodeId, name: 'Kling AI' });
+  // bin đang chọn thuộc project khác → về gốc, không lấy nhầm
+  assert.equal(pp.host('FS_getSelectedBin', 'soft').name, '');
+});

@@ -227,3 +227,15 @@ test('label của folder gán cho bin và file mới', async () => {
   assert.equal(b._label, 6);
   assert.equal(find(b, 'y.mov')._label, 6);
 });
+
+test('documentID đổi giữa 2 phiên → khớp theo đường dẫn và ghi lại khoá mới', async () => {
+  const { disk, pr, engine, store } = setup();
+  mk(disk, 'A/a.mov');
+  store.update((c) => {
+    c.projects.old = { path: pr.path, name: 'Proj.prproj', entries: [{ id: 'r', parentId: null, path: path.join(disk, 'A'), sub: true, label: -1, binNodeId: null, parentBinNodeId: null, excluded: [] }] };
+  });
+  const r = await engine.syncAll();
+  assert.equal(r.files, 1);
+  assert.ok(store.load().projects.d1);
+  assert.ok(!store.load().projects.old);
+});

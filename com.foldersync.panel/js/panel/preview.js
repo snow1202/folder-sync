@@ -70,7 +70,8 @@
     }
     window.FS.on(C.EVENTS.COMMAND, function (d) {
       var reply = function (r) { window.FS.send(C.EVENTS.REPLY, { id: d.id, ok: true, result: r }); };
-      if (d.cmd === 'selectedBin') return reply({ docId: 'd1', nodeId: 'n1', name: 'Asset' });
+      if (d.cmd === 'selectedBin') return reply({ docId: 'd1', projectName: 'Ads_FormaLift.prproj', nodeId: 'n1', name: 'Asset' });
+      if (d.cmd === 'projects') return reply([{ documentID: 'd1', name: 'Ads_FormaLift.prproj', active: true }]);
       if (d.cmd === 'sync') {
         var done = 0;
         var t = setInterval(function () {

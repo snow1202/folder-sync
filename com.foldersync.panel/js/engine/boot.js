@@ -112,6 +112,7 @@
           var binId = d.binNodeId || (await host.getSelectedBin(doc)).nodeId;
           return engine.linkBin(doc, binId, d.folder || null);
         }
+        case 'projects': return host.listProjects();
         case 'afterRelink': return engine.afterRelink(d.docId, d.pairs || []);
         case 'selectedBin': {
           var list = await host.listProjects();

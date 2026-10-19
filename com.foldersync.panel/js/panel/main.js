@@ -116,7 +116,10 @@
   function refreshTarget() {
     if (document.hidden) return;
     FS.command('selectedBin', {}, 4000).then(function (b) {
-      $('target-bin').textContent = b && b.name ? b.name : 'gốc project';
+      if (!b) return;
+      var proj = String(b.projectName || '').replace(/\.prproj$/i, '');
+      $('target-bin').textContent = (proj ? proj + ' › ' : '') + (b.name || 'gốc project');
+      $('target-bin').title = 'Folder thả vào sẽ được thêm cho project ' + (proj || '?') + ', trong bin ' + (b.name || 'gốc');
     }, function () { /* engine chưa sẵn sàng */ });
   }
   refreshTarget();

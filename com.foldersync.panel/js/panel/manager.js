@@ -13,6 +13,7 @@
   var dirty = false;
   var collapsed = {}; // id → true
   var states = {};    // id → 'ok'|'offline'|'busy'|'error'
+  var openProjects = null; // [{documentID, name, active}] — null = chưa biết (hiện tất cả)
 
   FS_TIPS.install();
 
@@ -138,7 +139,15 @@
   function render() {
     var box = $('rows');
     box.innerHTML = '';
-    var docIds = Object.keys(draft).filter(function (k) { return draft[k].entries.length; });
+    // Chỉ hiện project đang mở trong Premiere, project đang làm việc xếp đầu.
+    var docIds;
+    if (openProjects) {
+      docIds = openProjects.slice().sort(function (a, c) { return (c.active ? 1 : 0) - (a.active ? 1 : 0); })
+        .map(function (p) { return keyFor(p); })
+        .filter(function (k) { return k && draft[k] && draft[k].entries.length; });
+    } else {
+      docIds = Object.keys(draft).filter(function (k) { return draft[k].entries.length; });
+    }
     if (!docIds.length) {
       var em = el('div', 'empty');
       em.innerHTML = 'Chưa có folder nào được theo dõi.<br>Kéo folder từ Finder thả vào đây, hoặc bấm <b>Thêm folder</b>.<br>' +
@@ -150,8 +159,10 @@
       var proj = draft[docId];
       var g = el('div', 'pgroup');
       g.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>';
-      var b = el('b', '', proj.name || basename(proj.path || docId));
+      var openInfo = openProjects && openProjects.filter(function (p) { return keyFor(p) === docId; })[0];
+      var b = el('b', '', (openInfo && openInfo.name) || proj.name || basename(proj.path || docId));
       g.appendChild(b);
+      if (openInfo && openInfo.active && openProjects.length > 1) g.appendChild(el('span', 'mnote', '· đang làm việc'));
       box.appendChild(g);
       var entries = proj.entries;
       (function walk(parentId, depth) {
@@ -264,6 +275,25 @@
     if (paths.length) addPaths(paths); else msg('Chỉ nhận folder', 'err');
   });
 
+  // Khoá trong config của một project đang mở: theo documentID, không có thì theo đường dẫn .prproj.
+  function keyFor(p) {
+    if (draft[p.documentID]) return p.documentID;
+    var want = String(p.path || '').toLowerCase();
+    var ks = Object.keys(draft);
+    for (var i = 0; i < ks.length; i++) {
+      if (want && String(draft[ks[i]].path || '').toLowerCase() === want) return ks[i];
+    }
+    return p.documentID;
+  }
+
+  function loadOpenProjects() {
+    FS.command('projects', {}, 6000).then(function (list) {
+      if (Array.isArray(list)) { openProjects = list; render(); }
+    }, function () { /* engine chưa sẵn sàng → hiện tất cả */ });
+  }
+
   reload();
+  loadOpenProjects();
+  window.addEventListener('focus', loadOpenProjects);
   FS.send(C.EVENTS.COMMAND, { cmd: 'status' });
 })();
