@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <title>Folder Sync</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="panel" id="panel">
+
+      <!-- view chính -->
+      <div class="view show" id="v-main">
+        <div class="top">
+          <div class="brand">
+            <span class="spark" aria-hidden="true">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h6l2 2h10v10H3z"/><path d="M12 12v5M9.5 14.5 12 12l2.5 2.5"/></svg>
+            </span>
+            FOLDER SYNC
+          </div>
+          <div class="ver" id="ver">V1.0.0</div>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="act" id="b-watch" data-tip="watch">
+            <svg id="i-eye" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z"/><circle cx="12" cy="12" r="3"/><path id="i-eye-off" d="M3 3l18 18" style="display:none"/></svg>
+            <span class="lbl" id="l-watch">Watch</span>
+          </button>
+          <button type="button" class="act" id="b-sync" data-tip="sync">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+            <span class="lbl">Sync</span>
+          </button>
+          <button type="button" class="act icon" id="b-folders" data-tip="folders" aria-label="Danh sách folder">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+          </button>
+        </div>
+
+        <div class="dropline" id="dropline" data-tip="drop">
+          <div id="dl-normal"><b>Kéo folder vào đây</b> để theo dõi
+            <span class="bin">→ bin: <em id="target-bin">gốc project</em></span>
+          </div>
+          <ol class="steps" id="dl-steps" style="display:none">
+            <li>Chọn bin đích ở Project panel (không chọn → gốc)</li>
+            <li>Kéo folder từ Finder thả vào panel này</li>
+            <li>Bật <b>WATCH</b> để file mới tự vào project</li>
+          </ol>
+        </div>
+
+        <div class="foot">
+          <button type="button" class="tbtn" id="b-gear" data-tip="settings" aria-label="Cài đặt">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </button>
+          <div class="progress" id="progress">
+            <div class="bar"><i id="bar"></i></div>
+            <span class="ptxt" id="ptxt">0 / 0</span>
+            <button type="button" class="cancel" id="b-cancel" data-tip="cancel">Huỷ</button>
+          </div>
+          <span class="status idle" id="status" data-tip="status"><span class="dot"></span><span class="txt" id="status-txt">Đang kết nối…</span></span>
+        </div>
+      </div>
+
+      <!-- view cài đặt -->
+      <div class="view" id="v-settings">
+        <div class="shead">
+          <button type="button" class="iconbtn" id="s-back" aria-label="Quay lại">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <span class="title">Cài đặt</span>
+        </div>
+        <div class="srow">
+          <label class="check" data-tip="notifications"><input type="checkbox" id="s-notify" /> Hiện thông báo trong Events</label>
+        </div>
+        <div class="srow">
+          <div class="slabel"><span data-tip="allowed">Loại file được import</span><button type="button" class="linkbtn" id="s-ext-reset" data-tip="reset">Mặc định</button></div>
+          <textarea id="s-ext" spellcheck="false"></textarea>
+        </div>
+        <div class="srow">
+          <div class="slabel"><span data-tip="ignored">Folder bỏ qua</span><button type="button" class="linkbtn" id="s-ign-reset" data-tip="reset">Mặc định</button></div>
+          <textarea id="s-ign" spellcheck="false"></textarea>
+        </div>
+        <div class="shint" id="s-hint">Cài đặt tự lưu — dùng chung cho mọi project.</div>
+      </div>
+
+      <div class="drop" id="drop">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 10v6M9 13l3 3 3-3"/></svg>
+        <div id="drop-txt">Thả folder để theo dõi</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/lib/CSInterface.js"></script>
+  <script src="js/panel/preview.js"></script>
+  <script src="js/panel/common.js"></script>
+  <script src="js/panel/tips.js"></script>
+  <script src="js/panel/settings.js"></script>
+  <script src="js/panel/main.js"></script>
+</body>
+</html>
