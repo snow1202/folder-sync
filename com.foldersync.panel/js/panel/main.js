@@ -6,7 +6,6 @@
   var $ = function (id) { return document.getElementById(id); };
   var lastBeat = 0;
   var lastStatus = null;
-  var engineLaunched = false;
 
   FS_TIPS.install();
   $('ver').textContent = 'V' + C.VERSION;
@@ -101,15 +100,44 @@
     }
   }
 
-  FS.on(C.EVENTS.STATUS, function (st) { lastBeat = Date.now(); renderProgress(st.busy); render(st); });
+  // ---------------------------------------------------------------- canh engine
+  // Engine ẩn có thể không lên (vd. mất kết nối khi vừa mở Premiere). Panel thử mở
+  // lại nó; quá lâu vẫn không có thì tự chạy engine dự phòng ngay trong panel.
+  var openedAt = Date.now();
+  var hiddenBeat = 0;
+  var relaunches = 0;
+  var lastRelaunch = 0;
+  var embedded = null;
+
+  FS.on(C.EVENTS.STATUS, function (st) {
+    lastBeat = Date.now();
+    if (st.engine === 'hidden') {
+      hiddenBeat = Date.now();
+      if (embedded) { embedded.stop(); embedded = null; }
+    }
+    renderProgress(st.busy);
+    render(st);
+    if (embedded && st.engine === 'embedded' && !st.busy) {
+      setStatus('busy', 'Engine dự phòng · giữ panel mở',
+        'Phần đồng bộ ngầm chưa khởi động được nên đang chạy tạm trong panel này — đóng panel thì ngừng đồng bộ. Thoát hẳn Premiere (Cmd+Q), chờ vài giây rồi mở lại để engine ngầm chạy bình thường.');
+    }
+  });
   FS.on(C.EVENTS.PROGRESS, function (p) { lastBeat = Date.now(); renderProgress(p); });
 
-  // Engine chưa chạy? → thử mở; quá 10 s không có nhịp → báo đỏ.
   FS.send(C.EVENTS.COMMAND, { cmd: 'status' });
   setInterval(function () {
-    var gap = Date.now() - lastBeat;
-    if (gap > 4000 && !engineLaunched) { engineLaunched = true; FS.openExtension(C.EXT_IDS.ENGINE); }
-    if (gap > 10000) setStatus('err', 'Engine chưa chạy', 'Phần đồng bộ ngầm chưa khởi động. Hãy thoát hẳn Premiere (Cmd+Q) rồi mở lại.');
+    var now = Date.now();
+    if (now - hiddenBeat < 8000) return; // engine ẩn khoẻ
+    if (FS.isCEP && relaunches < 6 && now - lastRelaunch > 10000 && now - openedAt > 3000) {
+      relaunches++; lastRelaunch = now;
+      FS.openExtension(C.EXT_IDS.ENGINE);
+    }
+    if (FS.isCEP && !embedded && now - openedAt > 15000 && window.FS_startEngine) {
+      try { embedded = window.FS_startEngine('embedded'); } catch (e) { setStatus('err', 'Engine lỗi: ' + e.message); }
+    }
+    if (!embedded && now - lastBeat > 10000) {
+      setStatus('err', 'Engine chưa chạy', 'Phần đồng bộ ngầm chưa khởi động. Đang thử khởi động lại…');
+    }
   }, 2000);
 
   // Bin đích khi thả folder = bin đang chọn ở Project panel.

@@ -17,19 +17,42 @@
     return (window.FS_PREVIEW && window.FS_PREVIEW[rel]) || {};
   }
 
+  // Mỗi sự kiện mang _eid. Gửi qua CEP (tới extension khác) VÀ giao luôn cho
+  // listener trong chính trang này (engine dự phòng chạy trong panel cần nhận
+  // lệnh của panel). Nếu CEP cũng giao lại cho chính mình thì _eid chặn trùng.
+  var eidSeq = 0;
+  function seenSet() {
+    var seen = {};
+    var order = [];
+    return function first(eid) {
+      if (seen[eid]) return false;
+      seen[eid] = true;
+      order.push(eid);
+      if (order.length > 500) delete seen[order.shift()];
+      return true;
+    };
+  }
+
   function send(type, data) {
-    if (!isCEP) { (listeners[type] || []).forEach(function (fn) { fn(data || {}); }); return; }
+    var payload = Object.assign({}, data === undefined ? {} : data);
+    payload._eid = 'v' + Math.random().toString(36).slice(2, 8) + (++eidSeq);
+    var local = listeners[type] || [];
+    setTimeout(function () { local.forEach(function (fn) { fn(payload); }); }, 0);
+    if (!isCEP) return;
     var ev = new CSEvent(type, 'APPLICATION');
-    ev.data = JSON.stringify(data === undefined ? {} : data);
+    ev.data = JSON.stringify(payload);
     cs.dispatchEvent(ev);
   }
 
   function on(type, fn) {
-    if (!isCEP) { (listeners[type] = listeners[type] || []).push(fn); return; }
+    var first = seenSet(); // mỗi listener tự chặn trùng của riêng nó
+    var guarded = function (d) { if (d && d._eid && !first(d._eid)) return; fn(d || {}); };
+    (listeners[type] = listeners[type] || []).push(guarded);
+    if (!isCEP) return;
     cs.addEventListener(type, function (ev) {
       var d = ev && ev.data;
       if (typeof d === 'string') { try { d = JSON.parse(d); } catch (e) { /* giữ nguyên */ } }
-      fn(d || {});
+      guarded(d || {});
     });
   }
 
