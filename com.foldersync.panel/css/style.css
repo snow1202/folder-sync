@@ -127,10 +127,12 @@ textarea:focus{outline:none;border-color:var(--accent-line)}
 .xbtn:hover{color:var(--danger);background:var(--panel-2)}
 .empty{padding:40px 20px;text-align:center;color:var(--muted);line-height:1.7}
 .mfoot{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.mleft{flex:1;min-width:0}
+.mfoot .btn{white-space:nowrap;flex:none}
 .mleft,.mright{display:flex;gap:8px;align-items:center}
 .btn{font-size:11.5px;color:var(--txt);background:var(--panel-2);border:1px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer;display:flex;align-items:center;gap:6px}
 .btn:hover{border-color:var(--accent-line);color:var(--accent)}
 .btn.primary{color:var(--accent);border-color:var(--accent);background:linear-gradient(180deg,var(--accent-btn-a),var(--accent-btn-b))}
 .btn.primary:hover{box-shadow:0 6px 18px -10px var(--accent-glow)}
-.msg{font-family:var(--mono);font-size:10px;color:var(--muted);min-height:14px}
+.msg{font-family:var(--mono);font-size:10px;color:var(--muted);min-height:14px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .msg.err{color:var(--danger)}.msg.ok{color:var(--accent)}

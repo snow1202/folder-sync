@@ -29,6 +29,7 @@
   function msg(text, kind) {
     var m = $('msg');
     m.textContent = text || '';
+    m.title = text || '';
     m.className = 'msg' + (kind ? ' ' + kind : '');
   }
 
@@ -209,6 +210,8 @@
         if (draft[k] && !draft[k].entries.length) cfg.projects[k].entries = [];
       });
     });
+    dirty = false;
+    removed = new Set();
   }
 
   function link(folder) {
@@ -294,6 +297,10 @@
 
   reload();
   loadOpenProjects();
-  window.addEventListener('focus', loadOpenProjects);
+  // Cửa sổ có thể được giữ lại giữa các lần mở → mỗi lần quay lại thì nạp dữ liệu mới
+  // (folder vừa thả vào panel, bin engine vừa tạo), trừ khi đang có thay đổi chưa lưu.
+  function refreshIfClean() { if (!dirty) reload(); loadOpenProjects(); }
+  window.addEventListener('focus', refreshIfClean);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) refreshIfClean(); });
   FS.send(C.EVENTS.COMMAND, { cmd: 'status' });
 })();

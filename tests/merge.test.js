@@ -30,3 +30,16 @@ test('entry mới của engine mà cha không còn → bỏ', () => {
   const out = mergeDraft(fresh, [], new Set(['r']));
   assert.deepEqual(out, []);
 });
+
+test('folder gốc thêm từ panel trong lúc cửa sổ quản lý đang mở → không bị mất khi lưu', () => {
+  const fresh = [E('old', null, '/a'), E('v23', null, '/Drive/v23.x', { binNodeId: '9' })];
+  const draft = [E('old', null, '/a', { label: 3 }), E('new6', null, '/Drive/New 6')];
+  const out = mergeDraft(fresh, draft, new Set());
+  assert.deepEqual(out.map((e) => e.id).sort(), ['new6', 'old', 'v23']);
+});
+
+test('folder gốc đã ✕ trong cửa sổ quản lý thì vẫn bị bỏ', () => {
+  const fresh = [E('a', null, '/a'), E('b', null, '/b')];
+  const out = mergeDraft(fresh, [E('a', null, '/a')], new Set(['b']));
+  assert.deepEqual(out.map((e) => e.id), ['a']);
+});
