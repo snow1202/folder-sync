@@ -52,7 +52,7 @@
         </Resources>
         <UI>
           <Type>Modeless</Type>
-          <Menu>Folder Sync — Watch folders</Menu>
+          <!-- Không có <Menu>: chỉ mở từ nút 📁 trong panel, không hiện trong Window › Extensions. -->
           <Geometry>
             <Size><Width>860</Width><Height>540</Height></Size>
             <MinSize><Width>640</Width><Height>360</Height></MinSize>
