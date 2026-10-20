@@ -29,6 +29,24 @@
   window.addEventListener('pagehide', onClose);
   $('ver').textContent = 'V' + C.VERSION;
 
+  // Changelog: thay toàn bộ panel như màn Cài đặt.
+  function renderChangelog() {
+    var box = $('cl-list');
+    box.innerHTML = '';
+    (window.FS_CHANGELOG || []).forEach(function (r) {
+      var it = document.createElement('div'); it.className = 'clitem';
+      var h = document.createElement('div'); h.className = 'clhead';
+      var b = document.createElement('b'); b.textContent = 'v' + r.v;
+      var d = document.createElement('span'); d.textContent = r.date || '';
+      h.appendChild(b); h.appendChild(d); it.appendChild(h);
+      var ul = document.createElement('ul');
+      (r.items || []).forEach(function (t) { var li = document.createElement('li'); li.textContent = t; ul.appendChild(li); });
+      it.appendChild(ul); box.appendChild(it);
+    });
+  }
+  $('cl-open').addEventListener('click', function () { renderChangelog(); $('main-area').style.display = 'none'; $('changelog-area').style.display = ''; });
+  $('cl-back').addEventListener('click', function () { $('changelog-area').style.display = 'none'; $('main-area').style.display = ''; });
+
   // ---------------------------------------------------------------- WATCH
   function renderWatch(on) {
     $('b-watch').classList.toggle('on', on);

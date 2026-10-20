@@ -21,6 +21,9 @@
     var engineMod = FS.load('js/engine/engine.js');
 
     var instance = kind + '-' + Date.now().toString(36);
+    // Dấu vân tay code engine lúc khởi động — panel so với ổ để biết cần khởi động lại Premiere.
+    var engineFp = '';
+    try { engineFp = FS.load('js/core/fingerprint.js').engineFingerprint(FS.extRoot()); } catch (e) { engineFp = ''; }
     var active = true;
     var timers = [];
     var store = cfgMod.createStore();
@@ -62,7 +65,7 @@
       onRekey: function (oldId, newId) { history.rekey(oldId, newId); },
       emit: function (type, data) {
         if (!active) return;
-        if (type === C.EVENTS.STATUS) data = Object.assign({ engine: kind, instance: instance }, data);
+        if (type === C.EVENTS.STATUS) data = Object.assign({ engine: kind, instance: instance, engineFp: engineFp }, data);
         FS.send(type, data);
       },
     });

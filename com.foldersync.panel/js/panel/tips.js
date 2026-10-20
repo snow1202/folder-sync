@@ -20,6 +20,8 @@
     addIgn: 'Thêm tên folder cần bỏ qua, hoặc /regex/ (vd. /_AME$/). Gõ rồi nhấn Enter.',
     removeItem: 'Bỏ mục này khỏi danh sách. Chỉ lưu khi bấm OK — bấm Huỷ nếu xoá nhầm.',
     regexTag: 'Mục này là regex (viết giữa hai dấu /), không phân biệt hoa/thường.',
+    changelog: 'Xem các thay đổi của từng phiên bản.',
+    ubHide: 'Ẩn thông báo này (sẽ hiện lại lần mở panel sau nếu vẫn còn cần).',
     backSettings: 'Quay lại màn chính. Còn thay đổi chưa lưu thì sẽ hỏi trước.',
     cancelSettings: 'Đóng, bỏ mọi thay đổi chưa lưu.',
     okSettings: 'Lưu cài đặt — áp dụng ngay cho mọi project.',

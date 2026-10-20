@@ -8,6 +8,14 @@
 <body>
   <div class="wrap" id="main-area">
     <div class="panel" id="panel">
+      <!-- Thanh thông báo: có bản mới / cần khởi động lại Premiere -->
+      <div class="update-bar" id="update-bar" style="display:none" role="status">
+        <span class="ub-text" id="ub-text"></span>
+        <div class="ub-actions">
+          <button type="button" class="ub-btn" id="ub-btn" style="display:none"></button>
+          <button type="button" class="ub-x" id="ub-x" aria-label="Ẩn" data-tip="ubHide">✕</button>
+        </div>
+      </div>
 
       <!-- view chính -->
       <div class="view show" id="v-main">
@@ -18,7 +26,7 @@
             </span>
             FOLDER SYNC
           </div>
-          <div class="ver" id="ver">V1.0.0</div>
+          <div class="ver"><button type="button" class="clbtn" id="cl-open" data-tip="changelog">Changelog</button><b id="ver">V1.0.0</b></div>
         </div>
 
         <div class="actions">
@@ -122,12 +130,25 @@
     </div>
   </div>
 
+  <!-- Màn Changelog -->
+  <div class="setw" id="changelog-area" style="display:none">
+    <div class="shead2">
+      <button type="button" class="iconbtn" id="cl-back" aria-label="Quay lại">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <span class="mtitle">CHANGELOG</span>
+    </div>
+    <div class="cllist" id="cl-list"></div>
+  </div>
+
   <script src="js/lib/CSInterface.js"></script>
   <script src="js/panel/preview.js"></script>
   <script src="js/panel/common.js"></script>
   <script src="js/panel/tips.js"></script>
   <script src="js/engine/boot.js"></script>
+  <script src="js/panel/changelog.js"></script>
   <script src="js/panel/settingswin.js"></script>
   <script src="js/panel/main.js"></script>
+  <script src="js/panel/updater.js"></script>
 </body>
 </html>

@@ -26,13 +26,23 @@ Cây thư mục trên ổ thường giống hệt cây bin trong project. Mỗi 
 
 ### Cài đặt (macOS)
 
+**Cách nhanh nhất** — mở Terminal, dán lệnh sau rồi Enter:
+
 ```bash
-git clone https://github.com/snow1202/folder-sync.git
-cd folder-sync
-./install.sh
+curl -fsSL https://raw.githubusercontent.com/snow1202/folder-sync/main/web-install.sh | bash
 ```
 
-Thoát hẳn Premiere (Cmd+Q) rồi mở lại → **Window › Extensions › Folder Sync**.
+Hoặc tải **[Folder-Sync-Installer.zip](https://github.com/snow1202/folder-sync/releases/latest/download/Folder-Sync-Installer.zip)**, giải nén, chuột phải vào app → Open.
+
+Xong thì thoát hẳn Premiere (Cmd+Q) rồi mở lại → **Window › Extensions › Folder Sync**.
+
+### Cập nhật
+
+Có bản mới, panel tự hiện thanh **"Có bản mới — ↑ Cập nhật"**. Bấm là xong:
+- Bản mới chỉ đổi giao diện → panel tự tải lại.
+- Bản mới đổi phần đồng bộ ngầm → panel báo **"thoát hẳn Premiere (Cmd+Q) rồi mở lại"**; cho tới khi khởi động lại, phần đồng bộ ngầm vẫn chạy bản cũ.
+
+Xem các thay đổi: nút **Changelog** cạnh số phiên bản.
 
 ### Dùng thế nào
 
@@ -41,7 +51,7 @@ Thoát hẳn Premiere (Cmd+Q) rồi mở lại → **Window › Extensions › F
 | 👁 **WATCH** | Bật/tắt tự đồng bộ. Bật một lần là xong — đóng panel vẫn chạy. |
 | ⟳ **SYNC** | Quét ngay và import file còn thiếu. |
 | 📁 | Danh sách folder: SUB (lấy thư mục con), Label, ✕ bỏ theo dõi, bấm đường dẫn để relink, Thêm folder, Liên kết bin đang chọn. |
-| ⚙ | Thông báo, loại file được import, folder bỏ qua (hỗ trợ `/regex/`). |
+| ⚙ | Cài đặt (3 tab: Chung / Loại file / Folder bỏ qua, hỗ trợ `/regex/`). |
 
 **Thêm folder:** chọn bin đích trong Project panel → kéo folder từ Finder thả vào panel. Mọi nút đều có tooltip — đưa chuột vào để xem.
 
@@ -58,8 +68,8 @@ Image sequence, gộp thư mục con (FLT), nhận diện thẻ camera, đườn
 
 Folder Sync mirrors folders on disk into Premiere Pro bins and keeps them in sync: new files are imported as soon as they finish writing, duplicates are never imported (path-based, whole-project check), nothing in your project is ever removed or moved, and it keeps working in the background with the panel closed. Built for teams on Google Drive: remote folders are polled, offline Drive folders are auto-relinked to the current machine's Drive, and existing bin trees can be linked from a single file inside them.
 
-Install: `git clone https://github.com/snow1202/folder-sync.git && cd folder-sync && ./install.sh`, restart Premiere, open **Window › Extensions › Folder Sync**. Drag folders from Finder onto the panel (bins are created inside the bin selected in the Project panel), then turn on **WATCH**.
+Install: `curl -fsSL https://raw.githubusercontent.com/snow1202/folder-sync/main/web-install.sh | bash` (or the installer zip from Releases), restart Premiere, open **Window › Extensions › Folder Sync**. Drag folders from Finder onto the panel (bins are created inside the bin selected in the Project panel), then turn on **WATCH**.
 
 ---
 
-Phát triển: `npm test` (Node ≥ 18, không dependency). Thiết kế: [docs/specs](docs/specs/2026-10-19-folder-sync-design.md) · Checklist thử tay: [docs/TEST-CHECKLIST.md](docs/TEST-CHECKLIST.md).
+Phát triển: `npm test` (Node ≥ 18, không dependency) · cài bản phát triển bằng symlink: `./install.sh` · phát hành: `./publish.sh <version>`. Thiết kế: [docs/specs](docs/specs/2026-10-19-folder-sync-design.md) · Checklist thử tay: [docs/TEST-CHECKLIST.md](docs/TEST-CHECKLIST.md).
