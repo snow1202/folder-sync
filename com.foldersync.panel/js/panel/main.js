@@ -15,7 +15,18 @@
   var aliveTimer = (FS.isCEP && typeof require === 'function') ? require('timers').setInterval : setInterval;
   FS.send(C.EVENTS.PANEL_ALIVE, {});
   aliveTimer(function () { FS.send(C.EVENTS.PANEL_ALIVE, {}); }, C.ALIVE_EVERY_MS);
-  window.addEventListener('beforeunload', function () { FS.send(C.EVENTS.PANEL_CLOSED, {}); });
+  // Khi panel đóng, CEP bỏ các CSEvent gửi trong lúc trang bị huỷ (đã đo), nhưng code Node
+  // vẫn chạy → ghi file đánh dấu, panel con theo dõi file bằng fs.watch và đóng ngay.
+  FS.markParent('open');
+  var markedClosed = false;
+  function onClose() {
+    if (markedClosed) return;
+    markedClosed = true;
+    FS.markParent('closed');
+    FS.send(C.EVENTS.PANEL_CLOSED, {});
+  }
+  window.addEventListener('beforeunload', onClose);
+  window.addEventListener('pagehide', onClose);
   $('ver').textContent = 'V' + C.VERSION;
 
   // ---------------------------------------------------------------- WATCH

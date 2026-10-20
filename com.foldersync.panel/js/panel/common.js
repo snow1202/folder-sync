@@ -94,13 +94,53 @@
     return (r && r.data) ? r.data.map(function (p) { return decodeURI(String(p).replace(/^file:\/\//, '')); }) : [];
   }
 
-  // Panel con: tự đóng khi panel chính đóng (không còn nghe nhịp PANEL_ALIVE).
+  // ------------------------------------------------ quan hệ cha (panel chính) – con
+  // File đánh dấu trạng thái panel chính: ~/Library/Application Support/FolderSync/parent-panel.json
+  // Tính sẵn khi nạp trang: lúc trang đang bị huỷ, mọi lời gọi sang host (vd. getSystemPath
+  // trong load()) có thể bị chặn, nên markParent('closed') chỉ được dùng fs thuần.
+  var parentFileCached = null;
+  function parentFile() {
+    if (!parentFileCached) {
+      parentFileCached = require('path').join(require('os').homedir(), 'Library', 'Application Support', 'FolderSync', 'parent-panel.json');
+    }
+    return parentFileCached;
+  }
+  if (isCEP) { try { parentFile(); } catch (e) { /* bỏ qua */ } }
+
+  // Panel chính gọi: 'open' khi mở, 'closed' khi đóng (ghi đồng bộ — chạy được cả lúc trang bị huỷ).
+  function markParent(state) {
+    if (!isCEP) return;
+    try {
+      var fs = require('fs');
+      var f = parentFile();
+      if (state === 'open') fs.mkdirSync(require('path').dirname(f), { recursive: true });
+      fs.writeFileSync(f, JSON.stringify({ state: state, at: Date.now() }));
+    } catch (e) { /* không ghi được thì còn nhịp PANEL_ALIVE làm dự phòng */ }
+  }
+
+  // Panel con gọi: đóng ngay khi panel chính ghi 'closed' (fs.watch), dự phòng bằng nhịp PANEL_ALIVE
+  // (panel chính crash, không kịp ghi file).
   function followParent() {
     if (!isCEP) return;
+    var fs = require('fs');
+    var path = require('path');
     var C = load('js/core/constants.js');
+    var f = parentFile();
+    var openedAt = Date.now();
+    function check() {
+      try {
+        var d = JSON.parse(fs.readFileSync(f, 'utf8'));
+        if (d.state === 'closed' && d.at >= openedAt - 1000) closeSelf();
+      } catch (e) { /* file đang ghi dở / chưa có */ }
+    }
+    try {
+      fs.watch(path.dirname(f), function (ev, name) { if (!name || name === path.basename(f)) check(); });
+    } catch (e) { /* fs.watch lỗi → còn nhịp dự phòng */ }
     var last = Date.now();
     on(C.EVENTS.PANEL_ALIVE, function () { last = Date.now(); });
     on(C.EVENTS.PANEL_CLOSED, function () { closeSelf(); });
+    // fs.watch trên macOS có lúc báo trễ / không báo → đọc file (vài byte) mỗi 150 ms cho chắc.
+    setInterval(check, 150);
     setInterval(function () { if (Date.now() - last > C.CHILD_TIMEOUT_MS) closeSelf(); }, 1000);
   }
 
@@ -110,6 +150,6 @@
   window.FS = {
     isCEP: isCEP, cs: cs, extRoot: extRoot, load: load, send: send, on: on,
     command: function (c, p, t) { hookReply(); return command(c, p, t); },
-    pickFolders: pickFolders, openExtension: openExtension, closeSelf: closeSelf, followParent: followParent,
+    pickFolders: pickFolders, openExtension: openExtension, closeSelf: closeSelf, followParent: followParent, markParent: markParent,
   };
 })();
