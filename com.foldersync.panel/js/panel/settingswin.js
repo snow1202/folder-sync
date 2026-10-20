@@ -162,7 +162,7 @@
 
   // Mở lại cửa sổ (CEP có thể giữ trang) → nạp dữ liệu mới nếu chưa sửa gì.
   window.addEventListener('focus', function () { if (!dirty) load(); });
-  FS.on(C.EVENTS.PANEL_CLOSED, function () { FS.closeSelf(); });
+  FS.followParent(); // đóng theo panel chính
 
   load();
 })();

@@ -8,7 +8,13 @@
   var lastStatus = null;
 
   FS_TIPS.install();
-  // Đóng panel chính → báo cửa sổ Watch folders đóng theo.
+  // Panel chính là "cha": phát nhịp "còn mở"; panel con (Watch folders, Settings) không
+  // nghe thấy nhịp này quá CHILD_TIMEOUT_MS thì tự đóng. Khi đóng, Premiere huỷ trang quá
+  // nhanh nên tín hiệu PANEL_CLOSED dưới đây không phải lúc nào cũng kịp gửi.
+  // Dùng timer của Node (nếu có): không bị Chromium làm chậm khi panel nằm ẩn sau tab khác.
+  var aliveTimer = (FS.isCEP && typeof require === 'function') ? require('timers').setInterval : setInterval;
+  FS.send(C.EVENTS.PANEL_ALIVE, {});
+  aliveTimer(function () { FS.send(C.EVENTS.PANEL_ALIVE, {}); }, C.ALIVE_EVERY_MS);
   window.addEventListener('beforeunload', function () { FS.send(C.EVENTS.PANEL_CLOSED, {}); });
   $('ver').textContent = 'V' + C.VERSION;
 

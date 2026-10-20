@@ -250,7 +250,7 @@
   $('b-cancel').addEventListener('click', function () { FS.closeSelf(); });
 
   // Panel chính đóng → cửa sổ này đóng theo (thay đổi chưa bấm OK bị bỏ, như bấm Huỷ).
-  FS.on(C.EVENTS.PANEL_CLOSED, function () { FS.closeSelf(); });
+  FS.followParent(); // đóng theo panel chính
 
   // ---------------------------------------------------------------- trạng thái từ engine
   FS.on(C.EVENTS.STATUS, function (st) {

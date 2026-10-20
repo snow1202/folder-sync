@@ -49,6 +49,7 @@ const EVENTS = {
   PROGRESS: 'com.foldersync.progress',
   REPLY: 'com.foldersync.reply',
   PANEL_CLOSED: 'com.foldersync.panel-closed',
+  PANEL_ALIVE: 'com.foldersync.panel-alive',
   HISTORY: 'com.foldersync.history',
 };
 
@@ -64,6 +65,8 @@ module.exports = {
   STABLE_GAP_MS: 2000,
   ONLINE_TIMEOUT_MS: 3000,
   MAX_ERRORS: 3,
+  ALIVE_EVERY_MS: 1500,   // panel chính phát "còn mở"
+  CHILD_TIMEOUT_MS: 6000, // panel con không nghe thấy quá lâu → tự đóng
   EVENTS,
   EXT_IDS: {
     MAIN: 'com.foldersync.panel.main',

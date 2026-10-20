@@ -94,12 +94,22 @@
     return (r && r.data) ? r.data.map(function (p) { return decodeURI(String(p).replace(/^file:\/\//, '')); }) : [];
   }
 
+  // Panel con: tự đóng khi panel chính đóng (không còn nghe nhịp PANEL_ALIVE).
+  function followParent() {
+    if (!isCEP) return;
+    var C = load('js/core/constants.js');
+    var last = Date.now();
+    on(C.EVENTS.PANEL_ALIVE, function () { last = Date.now(); });
+    on(C.EVENTS.PANEL_CLOSED, function () { closeSelf(); });
+    setInterval(function () { if (Date.now() - last > C.CHILD_TIMEOUT_MS) closeSelf(); }, 1000);
+  }
+
   function openExtension(id) { if (isCEP) cs.requestOpenExtension(id, ''); }
   function closeSelf() { if (isCEP) cs.closeExtension(); else window.close(); }
 
   window.FS = {
     isCEP: isCEP, cs: cs, extRoot: extRoot, load: load, send: send, on: on,
     command: function (c, p, t) { hookReply(); return command(c, p, t); },
-    pickFolders: pickFolders, openExtension: openExtension, closeSelf: closeSelf,
+    pickFolders: pickFolders, openExtension: openExtension, closeSelf: closeSelf, followParent: followParent,
   };
 })();
