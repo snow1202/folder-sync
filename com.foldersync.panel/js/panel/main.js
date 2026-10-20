@@ -144,11 +144,11 @@
   var AUDIO = /\.(wav|mp3|aif|aiff|aac|m4a|flac|ogg|wma|bwf|caf|ac3)$/i;
   var IMAGE = /\.(png|jpe?g|psd|ai|tiff?|gif|bmp|exr|dpx|tga|heic|webp|svg|eps|dng)$/i;
 
+  // Thời điểm file được sync: dd/mm/yyyy HH:mm
   function hhmmss(ms) {
     var d = new Date(ms);
-    var today = new Date();
-    var t = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
-    return d.toDateString() === today.toDateString() ? t : ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2) + ' ' + t;
+    var p2 = function (n) { return ('0' + n).slice(-2); };
+    return p2(d.getDate()) + '/' + p2(d.getMonth() + 1) + '/' + d.getFullYear() + ' ' + p2(d.getHours()) + ':' + p2(d.getMinutes());
   }
 
   function renderHistory(fresh) {
