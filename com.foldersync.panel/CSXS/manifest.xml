@@ -5,7 +5,6 @@
   <ExtensionList>
     <Extension Id="com.foldersync.panel.main" Version="1.0.0" />
     <Extension Id="com.foldersync.panel.manager" Version="1.0.0" />
-    <Extension Id="com.foldersync.panel.settings" Version="1.0.0" />
     <Extension Id="com.foldersync.panel.engine" Version="1.0.0" />
   </ExtensionList>
   <ExecutionEnvironment>
@@ -57,28 +56,6 @@
           <Geometry>
             <Size><Width>860</Width><Height>540</Height></Size>
             <MinSize><Width>640</Width><Height>360</Height></MinSize>
-          </Geometry>
-        </UI>
-      </DispatchInfo>
-    </Extension>
-
-    <!-- Cửa sổ Settings (mở từ nút ⚙ hoặc menu ☰ của panel) -->
-    <Extension Id="com.foldersync.panel.settings">
-      <DispatchInfo>
-        <Resources>
-          <MainPath>./settings.html</MainPath>
-          <ScriptPath>./jsx/host.jsx</ScriptPath>
-          <CEFCommandLine>
-            <Parameter>--enable-nodejs</Parameter>
-            <Parameter>--mixed-context</Parameter>
-          </CEFCommandLine>
-        </Resources>
-        <UI>
-          <Type>Panel</Type>
-          <!-- Panel dock được. Không có <Menu>: chỉ mở từ nút ⚙ / menu ☰ của panel chính. -->
-          <Geometry>
-            <Size><Width>460</Width><Height>560</Height></Size>
-            <MinSize><Width>400</Width><Height>460</Height></MinSize>
           </Geometry>
         </UI>
       </DispatchInfo>

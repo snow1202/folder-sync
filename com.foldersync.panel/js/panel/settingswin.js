@@ -1,5 +1,5 @@
-// Folder Sync — cửa sổ Settings: 3 tab, danh sách từng dòng, Search, Thêm, ✕, Huỷ/OK.
-// Mọi thay đổi chỉ lưu khi bấm OK (giống Watchtower).
+// Folder Sync — màn Cài đặt trong panel chính: 3 tab, danh sách từng dòng, Tìm, Thêm, ✕, Huỷ/OK.
+// Mọi thay đổi chỉ lưu khi bấm OK (giống Watchtower). Mở bằng FS_SETTINGS.open().
 /* global FS, FS_TIPS */
 (function () {
   var C = FS.load('js/core/constants.js');
@@ -9,8 +9,6 @@
 
   var draft;   // { notifications, allowedExt, ignoredFolders }
   var dirty = false;
-
-  FS_TIPS.install();
 
   function load() {
     var s = store.load().settings;
@@ -146,8 +144,18 @@
     });
   });
 
-  // ---------------------------------------------------------------- Huỷ / OK
-  $('s-cancel').addEventListener('click', function () { FS.closeSelf(); });
+  // ---------------------------------------------------------------- mở / đóng màn
+  function open() {
+    load();
+    $('main-area').style.display = 'none';
+    $('settings-area').style.display = '';
+  }
+  function close() {
+    $('settings-area').style.display = 'none';
+    $('main-area').style.display = '';
+  }
+
+  $('s-cancel').addEventListener('click', close);
   $('s-ok').addEventListener('click', function () {
     if (dirty) {
       store.update(function (c) {
@@ -157,12 +165,20 @@
       });
       FS.send(C.EVENTS.CONFIG_CHANGED, { what: 'settings' });
     }
-    FS.closeSelf();
+    close();
+  });
+  // ← quay lại: còn thay đổi chưa lưu thì hỏi trước.
+  $('s-back').addEventListener('click', function () {
+    if (!dirty) { close(); return; }
+    var n = $('dirty-note');
+    n.innerHTML = '';
+    var q = el('span', 'confirm', 'Bỏ thay đổi chưa lưu? ');
+    var yes = el('button', 'linkbtn', 'Bỏ'); yes.type = 'button';
+    var no = el('button', 'linkbtn', 'Ở lại'); no.type = 'button';
+    yes.addEventListener('click', close);
+    no.addEventListener('click', function () { setDirty(true); });
+    q.appendChild(yes); q.appendChild(no); n.appendChild(q);
   });
 
-  // Mở lại cửa sổ (CEP có thể giữ trang) → nạp dữ liệu mới nếu chưa sửa gì.
-  window.addEventListener('focus', function () { if (!dirty) load(); });
-  FS.followParent(); // đóng theo panel chính
-
-  load();
+  window.FS_SETTINGS = { open: open, close: close };
 })();

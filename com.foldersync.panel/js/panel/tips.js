@@ -20,6 +20,7 @@
     addIgn: 'Thêm tên folder cần bỏ qua, hoặc /regex/ (vd. /_AME$/). Gõ rồi nhấn Enter.',
     removeItem: 'Bỏ mục này khỏi danh sách. Chỉ lưu khi bấm OK — bấm Huỷ nếu xoá nhầm.',
     regexTag: 'Mục này là regex (viết giữa hai dấu /), không phân biệt hoa/thường.',
+    backSettings: 'Quay lại màn chính. Còn thay đổi chưa lưu thì sẽ hỏi trước.',
     cancelSettings: 'Đóng, bỏ mọi thay đổi chưa lưu.',
     okSettings: 'Lưu cài đặt — áp dụng ngay cho mọi project.',
     state: 'Xanh: đang theo dõi bình thường. Vàng: đang import. Đỏ: không tìm thấy folder (ổ chưa cắm, Google Drive chưa đăng nhập, folder bị đổi tên) — bấm vào đường dẫn để chọn lại.',

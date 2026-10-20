@@ -71,7 +71,6 @@ module.exports = {
   EXT_IDS: {
     MAIN: 'com.foldersync.panel.main',
     MANAGER: 'com.foldersync.panel.manager',
-    SETTINGS: 'com.foldersync.panel.settings',
     ENGINE: 'com.foldersync.panel.engine',
   },
   VERSION: '1.0.0',

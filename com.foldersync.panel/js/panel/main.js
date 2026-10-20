@@ -57,10 +57,7 @@
 
   // ---------------------------------------------------------------- 📁 và ⚙
   $('b-folders').addEventListener('click', function () { openManager(); });
-  function openSettings() {
-    if (FS.isCEP) FS.openExtension(C.EXT_IDS.SETTINGS);
-    else window.open('settings.html', 'set', 'width=480,height=580');
-  }
+  function openSettings() { window.FS_SETTINGS.open(); }
   function openManager() {
     if (FS.isCEP) FS.openExtension(C.EXT_IDS.MANAGER);
     else window.open('manager.html', 'mgr', 'width=880,height=560');

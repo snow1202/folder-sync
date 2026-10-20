@@ -6,7 +6,7 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <div class="wrap">
+  <div class="wrap" id="main-area">
     <div class="panel" id="panel">
 
       <!-- view chính -->
@@ -77,11 +77,57 @@
     </div>
   </div>
 
+  <!-- Màn Cài đặt: thay toàn bộ panel khi bấm ⚙ (hoặc menu ☰ › Cài đặt…) -->
+  <div class="setw" id="settings-area" style="display:none">
+    <div class="shead2">
+      <button type="button" class="iconbtn" id="s-back" data-tip="backSettings" aria-label="Quay lại">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+      <span class="mtitle">CÀI ĐẶT</span>
+    </div>
+
+    <div class="tabs" role="tablist">
+      <button type="button" class="tab active" data-tab="general" data-tip="tabGeneral">Chung</button>
+      <button type="button" class="tab" data-tab="ext" data-tip="allowed">Loại file</button>
+      <button type="button" class="tab" data-tab="ign" data-tip="ignored">Folder bỏ qua</button>
+    </div>
+
+    <!-- tab Chung -->
+    <div class="tpane show" id="p-general">
+      <label class="check" data-tip="notifications"><input type="checkbox" id="g-notify" /> Hiện thông báo trong Events</label>
+    </div>
+
+    <!-- tab Loại file -->
+    <div class="tpane" id="p-ext">
+      <div class="search"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="text" id="ext-q" placeholder="Tìm…" spellcheck="false" /></div>
+      <div class="lhead"><span>LOẠI FILE ĐƯỢC IMPORT · <b id="ext-n">0</b></span><button type="button" class="btn sm" id="ext-add" data-tip="addExt">Thêm</button></div>
+      <div class="list" id="ext-list"></div>
+      <div class="lfoot"><button type="button" class="linkbtn" id="ext-reset" data-tip="reset">Khôi phục mặc định</button><span class="msg" id="ext-msg"></span></div>
+    </div>
+
+    <!-- tab Folder bỏ qua -->
+    <div class="tpane" id="p-ign">
+      <div class="search"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="text" id="ign-q" placeholder="Tìm…" spellcheck="false" /></div>
+      <div class="lhead"><span>TÊN FOLDER BỎ QUA · <b id="ign-n">0</b></span><button type="button" class="btn sm" id="ign-add" data-tip="addIgn">Thêm</button></div>
+      <div class="list" id="ign-list"></div>
+      <div class="lfoot"><button type="button" class="linkbtn" id="ign-reset" data-tip="reset">Khôi phục mặc định</button><span class="msg" id="ign-msg"></span></div>
+    </div>
+
+    <div class="sfoot">
+      <span class="mnote" id="dirty-note"></span>
+      <div class="mright">
+        <button type="button" class="btn" id="s-cancel" data-tip="cancelSettings">Huỷ</button>
+        <button type="button" class="btn primary" id="s-ok" data-tip="okSettings">OK</button>
+      </div>
+    </div>
+  </div>
+
   <script src="js/lib/CSInterface.js"></script>
   <script src="js/panel/preview.js"></script>
   <script src="js/panel/common.js"></script>
   <script src="js/panel/tips.js"></script>
   <script src="js/engine/boot.js"></script>
+  <script src="js/panel/settingswin.js"></script>
   <script src="js/panel/main.js"></script>
 </body>
 </html>

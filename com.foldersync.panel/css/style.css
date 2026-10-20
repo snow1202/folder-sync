@@ -139,7 +139,8 @@ textarea:focus{outline:none;border-color:var(--accent-line)}
 .msg.err{color:var(--danger)}.msg.ok{color:var(--accent)}
 
 /* ---------------------------------------------------------------- cửa sổ Settings */
-.setw{display:flex;flex-direction:column;height:100vh;padding:14px 16px 12px;gap:12px}
+.setw{display:flex;flex-direction:column;height:100vh;padding:12px 14px 12px;gap:12px}
+.shead2{display:flex;align-items:center;gap:10px}
 .tabs{display:flex;gap:18px;border-bottom:1px solid var(--line)}
 .tab{background:transparent;border:0;color:var(--txt-dim);font-size:12px;padding:6px 0 8px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
 .tab:hover{color:var(--txt)}
