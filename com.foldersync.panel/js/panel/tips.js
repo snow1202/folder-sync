@@ -16,6 +16,7 @@
     clearHistory: 'Xoá danh sách này (không ảnh hưởng gì tới project hay file trên ổ).',
     row: 'Bấm để chọn trong Project panel.',
     tabGeneral: 'Cài đặt chung của Folder Sync.',
+    accent: 'Đổi tông màu nhấn của panel (xem trước ngay khi chọn, bấm OK để lưu). Nền tối giữ nguyên để chữ luôn dễ đọc.',
     addExt: 'Thêm một đuôi file được phép import (vd. mov, r3d). Gõ rồi nhấn Enter.',
     addIgn: 'Thêm tên folder cần bỏ qua, hoặc /regex/ (vd. /_AME$/). Gõ rồi nhấn Enter.',
     removeItem: 'Bỏ mục này khỏi danh sách. Chỉ lưu khi bấm OK — bấm Huỷ nếu xoá nhầm.',

@@ -1,6 +1,13 @@
 // Folder Sync — lịch sử phiên bản (mới nhất ở trên). publish.sh chặn phát hành nếu thiếu mục cho version mới.
 window.FS_CHANGELOG = [
   {
+    v: "1.0.1",
+    date: "2026-10-20",
+    items: [
+      "Cài đặt › Chung: thêm \"Màu giao diện\" (giống 1-Click Resizer) — chọn màu nhấn bằng bảng màu, mã HEX hoặc 6 màu có sẵn; xem trước ngay, bấm OK để lưu, áp cho cả panel Watch folders.",
+    ],
+  },
+  {
     v: "1.0.0",
     date: "2026-10-20",
     items: [

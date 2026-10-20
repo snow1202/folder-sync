@@ -1,14 +1,22 @@
 // Folder Sync — màn Cài đặt trong panel chính: 3 tab, danh sách từng dòng, Tìm, Thêm, ✕, Huỷ/OK.
 // Mọi thay đổi chỉ lưu khi bấm OK (giống Watchtower). Mở bằng FS_SETTINGS.open().
-/* global FS, FS_TIPS */
+/* global FS, FS_TIPS, FS_THEME */
 (function () {
   var C = FS.load('js/core/constants.js');
   var S = FS.load('js/core/settings-edit.js');
   var store = FS.load('js/core/config.js').createStore();
   var $ = function (id) { return document.getElementById(id); };
 
-  var draft;   // { notifications, allowedExt, ignoredFolders }
+  var draft;   // { notifications, allowedExt, ignoredFolders, accent }
   var dirty = false;
+  var savedAccent;     // màu đang lưu — Huỷ thì quay về màu này
+  var settingsTouched; // đổi gì ngoài màu (engine cần biết)
+
+  // Bộ chọn màu: xem trước ngay khi kéo, chỉ lưu khi bấm OK.
+  var picker = FS_THEME.mount($('accent-picker'), FS_THEME.saved(), function (hex) {
+    draft.accent = FS_THEME.apply(hex);
+    setDirty(true);
+  });
 
   function load() {
     var s = store.load().settings;
@@ -16,14 +24,19 @@
       notifications: !!s.notifications,
       allowedExt: s.allowedExt.slice().sort(),
       ignoredFolders: s.ignoredFolders.slice(),
+      accent: s.accent || FS_THEME.DEFAULT,
     };
+    savedAccent = draft.accent;
+    settingsTouched = false;
+    picker.set(draft.accent);
     setDirty(false);
     $('g-notify').checked = draft.notifications;
     renderAll();
   }
 
-  function setDirty(v) {
+  function setDirty(v, engineToo) {
     dirty = v;
+    if (engineToo) settingsTouched = true;
     $('dirty-note').textContent = v ? 'Có thay đổi chưa lưu — bấm OK để lưu' : '';
   }
 
@@ -42,7 +55,7 @@
     });
   });
 
-  $('g-notify').addEventListener('change', function () { draft.notifications = this.checked; setDirty(true); });
+  $('g-notify').addEventListener('change', function () { draft.notifications = this.checked; setDirty(true, true); });
 
   // ---------------------------------------------------------------- danh sách
   // kind: 'ext' | 'ign'
@@ -82,7 +95,7 @@
         if (!r.ok) { msg(kind, r.error, 'err'); return; }
         draft[L.key] = r.list;
         adding[kind] = false;
-        setDirty(true);
+        setDirty(true, true);
         msg(kind, 'Đã thêm ' + L.show(r.value), 'ok');
         render(kind);
       });
@@ -107,7 +120,7 @@
       x.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>';
       x.addEventListener('click', function () {
         draft[L.key] = S.remove(draft[L.key], v);
-        setDirty(true);
+        setDirty(true, true);
         msg(kind, 'Đã bỏ ' + L.show(v) + ' — bấm Huỷ nếu xoá nhầm', '');
         render(kind);
       });
@@ -134,7 +147,7 @@
       yes.type = 'button'; no.type = 'button';
       yes.addEventListener('click', function () {
         draft[L.key] = kind === 'ext' ? L.defaults.slice().sort() : L.defaults.slice();
-        setDirty(true);
+        setDirty(true, true);
         msg(kind, 'Đã khôi phục mặc định — bấm OK để lưu', 'ok');
         render(kind);
       });
@@ -151,6 +164,7 @@
     $('settings-area').style.display = '';
   }
   function close() {
+    if (savedAccent) FS_THEME.apply(savedAccent); // Huỷ / bỏ thay đổi → bỏ màu đang xem thử
     $('settings-area').style.display = 'none';
     $('main-area').style.display = '';
   }
@@ -162,8 +176,11 @@
         c.settings.notifications = draft.notifications;
         c.settings.allowedExt = draft.allowedExt.slice();
         c.settings.ignoredFolders = draft.ignoredFolders.slice();
+        c.settings.accent = draft.accent;
       });
-      FS.send(C.EVENTS.CONFIG_CHANGED, { what: 'settings' });
+      if (settingsTouched) FS.send(C.EVENTS.CONFIG_CHANGED, { what: 'settings' });
+      if (draft.accent !== savedAccent) FS.send(FS_THEME.EVENT, { accent: draft.accent });
+      savedAccent = draft.accent;
     }
     close();
   });
