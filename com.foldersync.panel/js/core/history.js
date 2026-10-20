@@ -1,9 +1,23 @@
 // Folder Sync — lịch sử file đã import (hiển thị trong panel), 200 dòng mỗi project.
+// Mỗi file (theo đường dẫn) chỉ 1 dòng: lần sync gần nhất.
 // File: ~/Library/Application Support/FolderSync/history.json — { docId: [item mới nhất trước] }
 const fs = require('fs');
 const path = require('path');
 
+const { pathkey } = require('./pathkey.js');
+
 const MAX_PER_PROJECT = 200;
+
+// Giữ dòng đầu tiên (mới nhất) cho mỗi đường dẫn.
+function dedupe(list) {
+  const seen = new Set();
+  return list.filter((it) => {
+    const k = pathkey(it.path);
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+}
 
 function createHistory(dir) {
   const file = path.join(dir, 'history.json');
@@ -30,11 +44,14 @@ function createHistory(dir) {
       const l = d[it.docId] || (d[it.docId] = []);
       l.unshift(it);
     }
-    for (const k of Object.keys(d)) if (d[k].length > MAX_PER_PROJECT) d[k].length = MAX_PER_PROJECT;
+    for (const k of Object.keys(d)) {
+      d[k] = dedupe(d[k]);
+      if (d[k].length > MAX_PER_PROJECT) d[k].length = MAX_PER_PROJECT;
+    }
     write(d);
   }
 
-  function list(docId) { return (read()[docId] || []).slice(); }
+  function list(docId) { return dedupe(read()[docId] || []); }
 
   function clear(docId) {
     const d = read();
@@ -45,7 +62,7 @@ function createHistory(dir) {
   function rekey(oldId, newId) {
     const d = read();
     if (!d[oldId]) return;
-    d[newId] = (d[newId] || []).concat(d[oldId]).sort((a, b) => b.at - a.at).slice(0, MAX_PER_PROJECT);
+    d[newId] = dedupe((d[newId] || []).concat(d[oldId]).sort((a, b) => b.at - a.at)).slice(0, MAX_PER_PROJECT);
     delete d[oldId];
     write(d);
   }

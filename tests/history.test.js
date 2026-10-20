@@ -45,3 +45,21 @@ test('đổi khoá project (documentID mới) → chuyển lịch sử sang kho�
   assert.equal(h.list('new').length, 1);
   assert.equal(h.list('old').length, 0);
 });
+
+test('mỗi file chỉ 1 dòng: import lại cùng đường dẫn → giữ lần mới nhất, bỏ dòng cũ', () => {
+  const h = createHistory(tmp());
+  h.add([{ at: 1, docId: 'd1', path: '/x/A.mov', name: 'A.mov', nodeId: 'n1', bin: 'S' }]);
+  h.add([{ at: 2, docId: 'd1', path: '/x/B.mov', name: 'B.mov', nodeId: 'n2', bin: 'S' }]);
+  h.add([{ at: 3, docId: 'd1', path: '/X/a.mov', name: 'a.mov', nodeId: 'n9', bin: 'S2' }]); // cùng file (khác hoa/thường)
+  assert.deepEqual(h.list('d1').map((x) => [x.name, x.at, x.nodeId]), [['a.mov', 3, 'n9'], ['B.mov', 2, 'n2']]);
+});
+
+test('lịch sử cũ đã có dòng trùng → list() tự gộp, giữ lần mới nhất', () => {
+  const dir = tmp();
+  const it = (at) => ({ at, docId: 'd1', path: '/x/1.1.mp4', name: '1.1.mp4', nodeId: 'n' + at, bin: 'B' });
+  require('fs').writeFileSync(require('path').join(dir, 'history.json'), JSON.stringify({ d1: [it(30), it(20), it(10)] }));
+  const h = createHistory(dir);
+  assert.deepEqual(h.list('d1').map((x) => x.at), [30]);
+  h.add([{ at: 40, docId: 'd1', path: '/x/2.mp4', name: '2.mp4', nodeId: 'z', bin: 'B' }]);
+  assert.deepEqual(h.list('d1').map((x) => x.at), [40, 30]);
+});
