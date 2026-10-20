@@ -52,8 +52,8 @@
           </CEFCommandLine>
         </Resources>
         <UI>
-          <Type>Modeless</Type>
-          <!-- Không có <Menu>: chỉ mở từ nút 📁 trong panel, không hiện trong Window › Extensions. -->
+          <Type>Panel</Type>
+          <!-- Panel dock được (không tự ẩn khi Premiere mất focus như cửa sổ Modeless). Không có <Menu>: chỉ mở từ nút 📁. -->
           <Geometry>
             <Size><Width>860</Width><Height>540</Height></Size>
             <MinSize><Width>640</Width><Height>360</Height></MinSize>
@@ -74,8 +74,8 @@
           </CEFCommandLine>
         </Resources>
         <UI>
-          <Type>Modeless</Type>
-          <!-- Không có <Menu>: chỉ mở từ panel. -->
+          <Type>Panel</Type>
+          <!-- Panel dock được. Không có <Menu>: chỉ mở từ nút ⚙ / menu ☰ của panel chính. -->
           <Geometry>
             <Size><Width>460</Width><Height>560</Height></Size>
             <MinSize><Width>400</Width><Height>460</Height></MinSize>
