@@ -114,12 +114,93 @@
   function renderProgress(p) {
     var show = p && p.total > 0 && p.done < p.total;
     $('progress').classList.toggle('show', !!show);
-    $('status').style.display = show ? 'none' : '';
     if (show) {
-      $('bar').style.width = Math.round(100 * p.done / p.total) + '%';
-      $('ptxt').textContent = p.done.toLocaleString('vi-VN') + ' / ' + p.total.toLocaleString('vi-VN');
+      var pct = Math.round(100 * p.done / p.total);
+      $('bar').style.width = pct + '%';
+      $('ptxt').textContent = 'Đang import ' + p.done.toLocaleString('vi-VN') + ' / ' + p.total.toLocaleString('vi-VN') + ' file · ' + pct + '%';
+      setStatus('busy', 'Đang import…');
     }
   }
+
+  // ---------------------------------------------------------------- file đã import (project đang làm việc)
+  var hist = FS.load('js/core/history.js').createHistory(store.dir);
+  var host = FS.isCEP ? FS.load('js/engine/bridge.js').createBridge(FS.cs) : null;
+  var currentDoc = null;
+  var VIDEO = /\.(mp4|mov|mxf|avi|mkv|m4v|mpg|mpeg|mts|m2ts|r3d|braw|webm|wmv|dv|3gp|hevc|264|h264|ts|vob|flv)$/i;
+  var AUDIO = /\.(wav|mp3|aif|aiff|aac|m4a|flac|ogg|wma|bwf|caf|ac3)$/i;
+  var IMAGE = /\.(png|jpe?g|psd|ai|tiff?|gif|bmp|exr|dpx|tga|heic|webp|svg|eps|dng)$/i;
+
+  function hhmmss(ms) {
+    var d = new Date(ms);
+    var today = new Date();
+    var t = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+    return d.toDateString() === today.toDateString() ? t : ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2) + ' ' + t;
+  }
+
+  function renderHistory(fresh) {
+    var box = $('h-list');
+    var list = currentDoc ? hist.list(currentDoc) : [];
+    $('h-count').textContent = list.length;
+    box.innerHTML = '';
+    if (!list.length) {
+      var em = document.createElement('div');
+      em.className = 'aempty';
+      em.textContent = currentDoc ? 'Chưa có file nào được import vào project này. File mới sẽ hiện ở đây.' : 'Đang xác định project…';
+      box.appendChild(em);
+      return;
+    }
+    var freshKeys = {};
+    (fresh || []).forEach(function (it) { freshKeys[it.path + '|' + it.at] = true; });
+    list.forEach(function (it) {
+      var r = document.createElement('div');
+      r.className = 'arow' + (freshKeys[it.path + '|' + it.at] ? ' new' : '');
+      r.setAttribute('data-tip-text', it.path + '\n\nBấm để chọn trong Project panel.');
+      r.setAttribute('data-tip', 'row');
+      var kind = VIDEO.test(it.name) ? 'v' : AUDIO.test(it.name) ? 'a' : IMAGE.test(it.name) ? 'i' : 'o';
+      var ico = document.createElement('span');
+      ico.className = 'aico ' + kind;
+      ico.textContent = { v: 'VID', a: 'AUD', i: 'IMG', o: 'FILE' }[kind];
+      var info = document.createElement('div');
+      info.className = 'ainfo';
+      var b = document.createElement('b'); b.textContent = it.name;
+      var sp = document.createElement('span'); sp.textContent = '→ ' + (it.bin || '');
+      info.appendChild(b); info.appendChild(sp);
+      var tm = document.createElement('span'); tm.className = 'atime'; tm.textContent = hhmmss(it.at);
+      r.appendChild(ico); r.appendChild(info); r.appendChild(tm);
+      r.addEventListener('click', function () {
+        if (!host) return;
+        host.revealItem(it.docId, it.nodeId).then(function (res) {
+          if (res === 'missing') setStatus('err', 'Không còn trong project', it.name + ' đã bị xoá khỏi project (file vẫn còn trên ổ).');
+          else if (res === 'bin') setStatus('ok', 'Đã chọn bin ' + (it.bin || ''));
+          else setStatus('ok', 'Đã chọn ' + it.name);
+        }, function (e) { setStatus('err', e.message); });
+      });
+      box.appendChild(r);
+    });
+  }
+
+  FS.on(C.EVENTS.HISTORY, function (d) { if (d.docId === currentDoc) renderHistory(d.items); });
+
+  // "Xoá danh sách" — hỏi xác nhận ngay tại chỗ.
+  function buildClear() {
+    var boxc = $('h-clear-box');
+    boxc.innerHTML = '';
+    var btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'linkbtn'; btn.textContent = 'Xoá danh sách';
+    btn.setAttribute('data-tip', 'clearHistory');
+    btn.addEventListener('click', function () {
+      if (!currentDoc) return;
+      boxc.innerHTML = '';
+      var q = document.createElement('span'); q.className = 'confirm'; q.textContent = 'Xoá danh sách? ';
+      var yes = document.createElement('button'); yes.type = 'button'; yes.className = 'linkbtn'; yes.textContent = 'Đồng ý';
+      var no = document.createElement('button'); no.type = 'button'; no.className = 'linkbtn'; no.textContent = 'Thôi';
+      yes.addEventListener('click', function () { hist.clear(currentDoc); renderHistory(); buildClear(); });
+      no.addEventListener('click', buildClear);
+      q.appendChild(yes); q.appendChild(no); boxc.appendChild(q);
+    });
+    boxc.appendChild(btn);
+  }
+  buildClear();
 
   // ---------------------------------------------------------------- canh engine
   // Engine ẩn có thể không lên (vd. mất kết nối khi vừa mở Premiere). Panel thử mở
@@ -166,6 +247,7 @@
     if (document.hidden) return;
     FS.command('selectedBin', {}, 4000).then(function (b) {
       if (!b) return;
+      if (b.docId && b.docId !== currentDoc) { currentDoc = b.docId; renderHistory(); }
       var proj = String(b.projectName || '').replace(/\.prproj$/i, '');
       $('target-bin').textContent = (proj ? proj + ' › ' : '') + (b.name || 'gốc project');
       $('target-bin').title = 'Folder thả vào sẽ được thêm cho project ' + (proj || '?') + ', trong bin ' + (b.name || 'gốc');

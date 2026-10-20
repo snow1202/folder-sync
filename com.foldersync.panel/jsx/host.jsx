@@ -242,7 +242,7 @@ function FS_importBatch(argsJson) {
       out.push({ nodeId: String(k.nodeId), path: FS_mediaPath(k) });
     }
     if (a[3] !== null && a[3] !== undefined && a[3] >= 0) { FS_label(bin, a[3]); }
-    return { items: out };
+    return { items: out, binName: String(bin.name) };
   }, argsJson);
 }
 
@@ -302,6 +302,25 @@ function FS_relinkMedia(argsJson) {
       return false;
     });
     return { relinked: relinked, skipped: skipped };
+  }, argsJson);
+}
+
+// [docId, nodeId] → 'item' | 'bin' | 'missing'
+// Chọn item trong Project panel. select() chỉ chắc chắn với bin → clip không chọn được
+// thì chọn bin chứa nó.
+function FS_revealItem(argsJson) {
+  return FS_wrap(function (a) {
+    var project = FS_projectById(a[0]);
+    var hit = null;
+    var parentOf = null;
+    FS_walk(project.rootItem, function (it, parent) {
+      try { if (String(it.nodeId) === String(a[1])) { hit = it; parentOf = parent; return true; } } catch (e) {}
+      return false;
+    });
+    if (!hit) { return 'missing'; }
+    try { if (typeof hit.select === 'function') { hit.select(); return 'item'; } } catch (e2) {}
+    try { if (parentOf && typeof parentOf.select === 'function') { parentOf.select(); return 'bin'; } } catch (e3) {}
+    return 'missing';
   }, argsJson);
 }
 

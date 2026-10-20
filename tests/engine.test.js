@@ -239,3 +239,13 @@ test('documentID đổi giữa 2 phiên → khớp theo đường dẫn và ghi 
   assert.ok(store.load().projects.d1);
   assert.ok(!store.load().projects.old);
 });
+
+test('báo lại từng file đã import (tên, bin, nodeId) để ghi lịch sử', async () => {
+  const seen = [];
+  const { disk, engine } = setup({ engine: { onImported: (items) => seen.push(...items) } });
+  mk(disk, 'SFX/boom.wav');
+  mk(disk, 'SFX/Hit/hit.wav');
+  await engine.addFolders('d1', [path.join(disk, 'SFX')], null);
+  assert.deepEqual(seen.map((x) => [x.name, x.bin, x.docId]).sort(), [['boom.wav', 'SFX', 'd1'], ['hit.wav', 'Hit', 'd1']]);
+  assert.ok(seen.every((x) => x.nodeId && x.at > 0));
+});

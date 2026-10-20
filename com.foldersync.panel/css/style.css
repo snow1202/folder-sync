@@ -18,7 +18,8 @@ svg{display:block}
 button{font-family:inherit}
 
 /* ---------------------------------------------------------------- panel chính */
-.wrap{min-height:100%;padding:10px;position:relative}
+.wrap{height:100vh;padding:10px;position:relative;display:flex;flex-direction:column;gap:10px}
+.wrap>.panel{flex:none}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;position:relative}
 .top{display:flex;align-items:center;justify-content:space-between;padding:11px 13px 9px}
 .brand{display:flex;align-items:center;gap:9px;font-weight:600;font-size:13px;letter-spacing:.04em}
@@ -168,3 +169,29 @@ textarea:focus{outline:none;border-color:var(--accent-line)}
 .lfoot .msg{flex:1}
 .confirm{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--amber)}
 .sfoot{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid var(--line-soft);padding-top:10px}
+
+/* ---------------------------------------------------------------- hoạt động: tiến trình + đã import */
+.activity{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
+.bigprog{display:none;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px 12px}
+.bigprog.show{display:block}
+.bphead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.bptxt{font-family:var(--mono);font-size:11px;color:var(--txt);letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bpbar{position:relative;height:16px;border-radius:5px;overflow:hidden;border:1px solid var(--line);
+  background:repeating-linear-gradient(-45deg,#2a312c 0 7px,#1b201d 7px 14px);background-size:20px 20px;animation:stripes 1s linear infinite}
+.bpbar i{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(180deg,#4ff096,var(--accent-dim));box-shadow:0 0 12px -2px var(--accent-glow);transition:width .3s ease}
+@keyframes stripes{to{background-position:20px 0}}
+.ahead{display:flex;align-items:center;justify-content:space-between;padding:0 4px;font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;color:var(--muted)}
+.ahead b{color:var(--txt-dim);font-weight:500}
+.alist{flex:1;min-height:0;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.arow{display:flex;align-items:center;gap:9px;padding:6px 10px;border-bottom:1px solid var(--line-soft);cursor:pointer}
+.arow:last-child{border-bottom:0}
+.arow:hover{background:var(--row-hover)}
+.arow.new{animation:flashnew 1.2s ease}
+@keyframes flashnew{from{background:var(--accent-deep)}to{background:transparent}}
+.aico{width:24px;height:24px;border-radius:5px;display:grid;place-items:center;flex:none;font-family:var(--mono);font-size:8.5px;font-weight:600;letter-spacing:.02em}
+.aico.v{background:#1d2b4a;color:#8fb3ff}.aico.a{background:#14382a;color:#6fe3a6}.aico.i{background:#3a2140;color:#e59bf0}.aico.o{background:var(--panel-2);color:var(--txt-dim)}
+.ainfo{min-width:0;flex:1}
+.ainfo b{display:block;font-size:11.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ainfo span{display:block;font-family:var(--mono);font-size:9.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.atime{font-family:var(--mono);font-size:9.5px;color:var(--muted);flex:none}
+.aempty{padding:22px 16px;text-align:center;color:var(--muted);font-size:11px;line-height:1.6}

@@ -12,6 +12,7 @@ function createPremiere(opts) {
   let seq = 0;
   const nid = () => String(1000 + (++seq));
   const events = [];
+  const selected = [];
   let selection = [];
 
   function collection(list) {
@@ -37,6 +38,7 @@ function createPremiere(opts) {
       canChangeMediaPath() { return type === TYPE.CLIP; },
       changeMediaPath(p) { item._media = p; item._offline = false; return true; },
       createBin(n) { const b = makeItem(TYPE.BIN, n); kids.push(b); return b; },
+      select() { if (item._noSelect) throw new Error('select không hỗ trợ'); selected.push(item.nodeId); },
     };
     return item;
   }
@@ -93,7 +95,7 @@ function createPremiere(opts) {
   }
 
   return {
-    app, events, host, TYPE, makeItem,
+    app, events, selected, host, TYPE, makeItem,
     addProject(id, p) { const pr = makeProject(id, p); projects.push(pr); return pr; },
     select(items) { selection = items; },
     walk(item, fn) { fn(item); for (const k of item._kids) this.walk(k, fn); },

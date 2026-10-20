@@ -47,12 +47,19 @@
 
     function modeFor(p) { return watchmode.modeFor(p, mounts, os.homedir()); }
 
+    var history = FS.load('js/core/history.js').createHistory(store.dir);
     var host = bridgeMod.createBridge(FS.cs);
     var engine = engineMod.createEngine({
       store: store,
       host: host,
       log: log,
       modeFor: modeFor,
+      onImported: function (items) {
+        if (!items.length) return;
+        history.add(items);
+        if (active) FS.send(C.EVENTS.HISTORY, { docId: items[0].docId, items: items });
+      },
+      onRekey: function (oldId, newId) { history.rekey(oldId, newId); },
       emit: function (type, data) {
         if (!active) return;
         if (type === C.EVENTS.STATUS) data = Object.assign({ engine: kind, instance: instance }, data);

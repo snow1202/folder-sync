@@ -37,6 +37,8 @@ function createEngine(opts) {
   const o = Object.assign({
     emit: () => {},
     log: () => {},
+    onImported: () => {},  // (items: [{at, docId, path, name, nodeId, bin}]) — ghi lịch sử
+    onRekey: () => {},     // (oldDocId, newDocId)
     now: () => Date.now(),
     modeFor: () => 'poll',
     exists: defaultExists,
@@ -149,8 +151,9 @@ function createEngine(opts) {
     const found = findProject(cfg, info);
     if (!found || !found.project.entries.length) return { files: 0, folders: 0, binNames: [] };
     // documentID đổi (mở lại project) → ghi lại khoá mới để panel/manager khớp đúng.
-    if (store.load().projects[info.documentID] === undefined) {
+    if (found.key !== info.documentID) {
       store.update((c) => { findProject(c, info); });
+      try { o.onRekey(found.key, info.documentID); } catch (e) { /* bỏ qua */ }
     }
     let entries = found.project.entries;
     const filters = settingsFilters();
@@ -250,6 +253,11 @@ function createEngine(opts) {
             R.state[e.id] = 'busy';
             const res = await host.importBatch(docId, e.binNodeId, part, e.label);
             const got = new Set((res.items || []).map((it) => pathkey(it.path)));
+            try {
+              o.onImported((res.items || []).filter((it) => it.path).map((it) => ({
+                at: o.now(), docId, path: it.path, name: path.basename(it.path), nodeId: it.nodeId, bin: res.binName || path.basename(e.path),
+              })));
+            } catch (err) { o.log('ghi lịch sử lỗi: ' + err.message); }
             for (const f of part) {
               const k = pathkey(f);
               if (got.has(k)) { R.index.add(k); result.files += 1; }

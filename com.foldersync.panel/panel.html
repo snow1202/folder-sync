@@ -50,11 +50,6 @@
           <button type="button" class="tbtn" id="b-gear" data-tip="settings" aria-label="Cài đặt">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
           </button>
-          <div class="progress" id="progress">
-            <div class="bar"><i id="bar"></i></div>
-            <span class="ptxt" id="ptxt">0 / 0</span>
-            <button type="button" class="cancel" id="b-cancel" data-tip="cancel">Huỷ</button>
-          </div>
           <span class="status idle" id="status" data-tip="status"><span class="dot"></span><span class="txt" id="status-txt">Đang kết nối…</span></span>
         </div>
       </div>
@@ -63,6 +58,22 @@
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 10v6M9 13l3 3 3-3"/></svg>
         <div id="drop-txt">Thả folder để theo dõi</div>
       </div>
+    </div>
+
+    <!-- Hoạt động: thanh tiến trình (chỉ khi đang import) + file đã import vào project đang làm việc -->
+    <div class="activity">
+      <div class="bigprog" id="progress">
+        <div class="bphead">
+          <span class="bptxt" id="ptxt">Đang import…</span>
+          <button type="button" class="cancel" id="b-cancel" data-tip="cancel">Huỷ</button>
+        </div>
+        <div class="bpbar"><i id="bar"></i></div>
+      </div>
+      <div class="ahead">
+        <span data-tip="history">ĐÃ IMPORT · <b id="h-count">0</b></span>
+        <span id="h-clear-box"><button type="button" class="linkbtn" id="h-clear" data-tip="clearHistory">Xoá danh sách</button></span>
+      </div>
+      <div class="alist" id="h-list"></div>
     </div>
   </div>
 

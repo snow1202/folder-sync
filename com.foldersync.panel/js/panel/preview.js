@@ -58,6 +58,13 @@
     'js/core/tree.js': loadModule('js/core/tree.js'),
     'js/core/merge.js': loadModule('js/core/merge.js'),
     'js/core/settings-edit.js': loadModule('js/core/settings-edit.js'),
+    'js/core/history.js': { createHistory: function () {
+      var now = Date.now();
+      var demo = ['v23.2 copy.mp4', 'Tiếng mưa.wav', 'Bundle.psd', 'counter_0001.png', 'BG music final.mp3', 'Drone shot 04.mov', 'Logo.ai', 'notes.srt'].map(function (n, i) {
+        return { at: now - i * 95000, docId: 'd1', path: '/Users/me/Drive/SAMX/Sources/' + n, name: n, nodeId: 'n' + i, bin: ['Kling AI', 'Audio VN', 'Graphics', 'Sequences'][i % 4] };
+      });
+      return { list: function () { return demo.slice(); }, add: function (items) { demo = items.concat(demo); }, clear: function () { demo = []; } };
+    } },
     'js/core/config.js': { createStore: function () { return store; } },
   };
 

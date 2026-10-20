@@ -49,6 +49,7 @@ const EVENTS = {
   PROGRESS: 'com.foldersync.progress',
   REPLY: 'com.foldersync.reply',
   PANEL_CLOSED: 'com.foldersync.panel-closed',
+  HISTORY: 'com.foldersync.history',
 };
 
 module.exports = {

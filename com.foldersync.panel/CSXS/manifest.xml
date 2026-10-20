@@ -33,8 +33,8 @@
           <Type>Panel</Type>
           <Menu>Folder Sync</Menu>
           <Geometry>
-            <Size><Width>360</Width><Height>220</Height></Size>
-            <MinSize><Width>260</Width><Height>150</Height></MinSize>
+            <Size><Width>360</Width><Height>460</Height></Size>
+            <MinSize><Width>260</Width><Height>220</Height></MinSize>
           </Geometry>
         </UI>
       </DispatchInfo>

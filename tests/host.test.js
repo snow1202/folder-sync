@@ -118,3 +118,17 @@ test('mở 2 project: project active = project chứa bin đang chọn, không p
   // bin đang chọn thuộc project khác → về gốc, không lấy nhầm
   assert.equal(pp.host('FS_getSelectedBin', 'soft').name, '');
 });
+
+test('FS_revealItem: chọn clip; clip không chọn được thì chọn bin chứa nó; không thấy → missing', () => {
+  const pp = createPremiere();
+  const pr = pp.addProject('d1', '/p/A.prproj');
+  const bin = pr.rootItem.createBin('SFX');
+  pr.importFiles(['/x/a.wav', '/x/b.wav'], true, bin);
+  const [a, b] = bin._kids;
+  assert.equal(pp.host('FS_revealItem', 'd1', a.nodeId), 'item');
+  assert.equal(pp.selected.at(-1), a.nodeId);
+  b._noSelect = true;
+  assert.equal(pp.host('FS_revealItem', 'd1', b.nodeId), 'bin');
+  assert.equal(pp.selected.at(-1), bin.nodeId);
+  assert.equal(pp.host('FS_revealItem', 'd1', '424242'), 'missing');
+});
