@@ -73,5 +73,5 @@ module.exports = {
     MANAGER: 'com.foldersync.panel.manager',
     ENGINE: 'com.foldersync.panel.engine',
   },
-  VERSION: '1.0.0',
+  VERSION: '1.0.1',
 };
