@@ -51,6 +51,20 @@ test('thêm folder → tạo cây bin trong bin đang chọn + import đủ + th
   assert.match(pp.events.at(-1).msg, /2 file, 2 thư mục con đã thêm vào/);
 });
 
+test('thêm folder với sub=false → chỉ file trực tiếp, không tạo bin con', async () => {
+  const { disk, pr, engine, store } = setup();
+  mk(disk, 'Assets/a.mov');
+  mk(disk, 'Assets/Day 01/b.mov');
+  const r = await engine.addFolders('d1', [path.join(disk, 'Assets')], null, false);
+  assert.equal(r.files, 1);
+  assert.deepEqual(names(find(pr.rootItem, 'Assets')), ['a.mov']);
+  const entries = store.load().projects.d1.entries;
+  assert.equal(entries.length, 1);
+  assert.equal(entries[0].sub, false);
+  mk(disk, 'Assets/Day 02/c.mov');
+  assert.equal((await engine.syncAll()).files, 0, 'thư mục con mới cũng bị bỏ qua');
+});
+
 test('chạy lại không import trùng; file import tay cũng không bị trùng', async () => {
   const { disk, pp, pr, engine } = setup();
   mk(disk, 'A/a.mov');

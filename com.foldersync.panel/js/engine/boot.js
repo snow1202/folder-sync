@@ -135,7 +135,7 @@
           case 'add': {
             var docId = d.docId || (await activeProject()).documentID;
             var bin = d.parentBinNodeId || (await host.getSelectedBin(docId)).nodeId;
-            return engine.addFolders(docId, d.paths || [], bin);
+            return engine.addFolders(docId, d.paths || [], bin, d.sub);
           }
           case 'link': {
             var doc = d.docId || (await activeProject()).documentID;

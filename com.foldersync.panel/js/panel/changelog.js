@@ -1,6 +1,16 @@
 // Folder Sync — lịch sử phiên bản (mới nhất ở trên). publish.sh chặn phát hành nếu thiếu mục cho version mới.
 window.FS_CHANGELOG = [
   {
+    v: "1.0.2",
+    date: "2026-10-21",
+    items: [
+      "Kéo folder từ Finder vào panel: hỏi có import cả sub-folder không. Watch Folders có ô tick \"Kèm sub-folder\" cạnh nút Thêm folder.",
+      "Watch Folders: dòng vàng \"⚠ Chưa lưu…\" đếm các thay đổi + nút ↺ Bỏ hết; folder bị xoá hiện mờ với nút ↺ để lấy lại; bấm Huỷ khi còn thay đổi thì liệt kê và hỏi Quay lại / Thoát.",
+      "Kéo folder vào panel chính khi Watch Folders còn thay đổi chưa lưu → cảnh báo bấm OK/Huỷ trước.",
+      "Ghi rõ: dòng \"Folder mới sẽ vào →\" chỉ áp dụng lúc thêm folder; SYNC luôn đổ vào bin đã gán cho folder, không dùng bin đang chọn.",
+    ],
+  },
+  {
     v: "1.0.1",
     date: "2026-10-20",
     items: [

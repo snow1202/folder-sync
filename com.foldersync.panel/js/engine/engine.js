@@ -326,13 +326,13 @@ function createEngine(opts) {
     markDirty: (rootPath) => dirty.add(pathkey(rootPath)),
     invalidate: (docId) => { if (docId) proj(docId).index = null; else for (const k of Object.keys(rt)) rt[k].index = null; },
 
-    // Thêm folder (kéo-thả / nút Thêm). parentBinNodeId: bin đang chọn.
-    addFolders: (docId, paths, parentBinNodeId) => enqueue(async () => {
+    // Thêm folder (kéo-thả / nút Thêm). parentBinNodeId: bin đang chọn. sub=false: chỉ file trực tiếp trong folder.
+    addFolders: (docId, paths, parentBinNodeId, sub) => enqueue(async () => {
       const info = (await host.listProjects()).find((p) => p.documentID === docId);
       if (!info) throw new Error('Không tìm thấy project');
       store.update((cfg) => {
         const p = ensureProject(cfg, info);
-        for (const abs of paths) T.addRoot(p.entries, { path: abs, parentBinNodeId: parentBinNodeId || null });
+        for (const abs of paths) T.addRoot(p.entries, { path: abs, parentBinNodeId: parentBinNodeId || null, sub: sub !== false });
       });
       return doSync({ manual: true, force: true }, docId);
     }),

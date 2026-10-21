@@ -57,6 +57,7 @@
     'js/core/constants.js': C,
     'js/core/tree.js': loadModule('js/core/tree.js'),
     'js/core/merge.js': loadModule('js/core/merge.js'),
+    'js/panel/draft-diff.js': loadModule('js/panel/draft-diff.js'),
     'js/core/settings-edit.js': loadModule('js/core/settings-edit.js'),
     'js/core/history.js': { createHistory: function () {
       var now = Date.now();

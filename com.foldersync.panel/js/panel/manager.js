@@ -1,16 +1,20 @@
 // Folder Sync — cửa sổ quản lý watch-folder (bản nháp, chỉ lưu khi OK).
-/* global FS, FS_TIPS */
+/* global FS, FS_TIPS, FS_ASK */
 (function () {
   var C = FS.load('js/core/constants.js');
   var T = FS.load('js/core/tree.js');
   var M = FS.load('js/core/merge.js');
+  var DD = FS.load('js/panel/draft-diff.js');
   var store = FS.load('js/core/config.js').createStore();
   var $ = function (id) { return document.getElementById(id); };
 
   var draft;          // { docId: {path, name, entries} }
-  var removed;        // Set id đã ✕
+  var removed;        // Set id bị xoá thật (lúc lưu) — cho mergeDraft
+  var marked;         // Set id đã bấm ✕: dòng còn hiện mờ, ↺ để lấy lại; chỉ xoá thật khi OK
+  var base;           // bản đã lưu lúc nạp — để liệt kê thay đổi chưa lưu
   var relinks;        // [{docId, oldRoot, newRoot}]
-  var dirty = false;
+  var dirty = false;  // = còn thay đổi chưa lưu (tính lại mỗi lần render)
+  var pending = [];   // danh sách thay đổi chưa lưu (draft-diff)
   var collapsed = {}; // id → true
   var states = {};    // id → 'ok'|'offline'|'busy'|'error'
   var openProjects = null; // [{documentID, name, active}] — null = chưa biết (hiện tất cả)
@@ -20,7 +24,9 @@
   function reload() {
     var cfg = store.load();
     draft = JSON.parse(JSON.stringify(cfg.projects));
+    base = JSON.parse(JSON.stringify(cfg.projects));
     removed = new Set();
+    marked = new Set();
     relinks = [];
     dirty = false;
     render();
@@ -65,8 +71,14 @@
     return s;
   }
 
+  function isGone(entries, e) {
+    for (var x = e; x; x = x.parentId ? T.byId(entries, x.parentId) : null) if (marked.has(x.id)) return true;
+    return false;
+  }
+
   function row(docId, entries, e, depth) {
-    var r = el('div', 'trow');
+    var gone = isGone(entries, e);
+    var r = el('div', 'trow' + (gone ? ' gone' : ''));
     var st = states[e.id] || 'unknown';
 
     var c0 = el('div', 'cell-c');
@@ -123,21 +135,32 @@
     var c5 = el('div', 'cell-c');
     var x = el('button', 'xbtn');
     x.type = 'button';
-    x.setAttribute('data-tip', 'remove');
-    x.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>';
-    x.addEventListener('click', function () {
-      removed.add(e.id);
-      T.descendants(entries, e.id).forEach(function (d) { removed.add(d.id); });
-      draft[docId].entries = T.remove(entries, e.id);
-      dirty = true; render();
-    });
-    c5.appendChild(x);
+    if (marked.has(e.id)) {
+      // đã ✕ (chưa lưu) → nút ↺ lấy lại
+      x.className = 'xbtn undo';
+      x.setAttribute('data-tip', 'undoRemove');
+      x.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>';
+      x.addEventListener('click', function () { marked.delete(e.id); render(); });
+      c5.appendChild(x);
+    } else if (!gone) {
+      x.setAttribute('data-tip', 'remove');
+      x.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>';
+      x.addEventListener('click', function () {
+        // con đã ✕ riêng trước đó → gộp vào lần ✕ cha
+        T.descendants(entries, e.id).forEach(function (d) { marked.delete(d.id); });
+        marked.add(e.id);
+        render();
+      });
+      c5.appendChild(x);
+    }
+    if (gone) { cb.disabled = true; c4.firstChild.disabled = true; }
 
     [c0, c1, c2, c3, c4, c5].forEach(function (c) { r.appendChild(c); });
     return r;
   }
 
   function render() {
+    renderUnsaved();
     var box = $('rows');
     box.innerHTML = '';
     // Chỉ hiện project đang mở trong Premiere, project đang làm việc xếp đầu.
@@ -178,25 +201,70 @@
   }
 
   // ---------------------------------------------------------------- thêm folder
-  function addPaths(paths) {
+  // sub: true/false theo ô tick (nút Thêm folder); undefined → hỏi bằng hộp thoại (kéo-thả).
+  function addPaths(paths, sub) {
     if (!paths.length) return;
     FS.command('selectedBin', {}, 8000).then(function (sb) {
-      if (!draft[sb.docId]) draft[sb.docId] = { path: sb.projectPath || '', name: sb.projectName || '', entries: [] };
-      paths.forEach(function (p) { T.addRoot(draft[sb.docId].entries, { path: p, parentBinNodeId: sb.nodeId }); });
-      dirty = true;
-      msg('Đã thêm ' + paths.length + ' folder → bin "' + (sb.name || 'gốc project') + '". Bấm OK để import.', 'ok');
-      render();
-    }, function (e) { msg(e.message, 'err'); });
+      var proj = String(sb.projectName || '').replace(/\.prproj$/i, '');
+      var ask = sub === undefined ? FS_ASK.sub(paths, (proj ? proj + ' › ' : '') + (sb.name || 'gốc project')) : Promise.resolve(sub);
+      return ask.then(function (withSub) {
+        if (withSub === null) return;
+        if (!draft[sb.docId]) draft[sb.docId] = { path: sb.projectPath || '', name: sb.projectName || '', entries: [] };
+        paths.forEach(function (p) { T.addRoot(draft[sb.docId].entries, { path: p, parentBinNodeId: sb.nodeId, sub: withSub }); });
+        dirty = true;
+        msg('Đã thêm ' + paths.length + ' folder' + (withSub ? ' (kèm sub-folder)' : ' (không kèm sub-folder)') +
+          ' → bin "' + (sb.name || 'gốc project') + '". Bấm OK để import.', 'ok');
+        render();
+      });
+    }).catch(function (e) { msg(e.message, 'err'); });
   }
+
+  // Ô "Kèm sub-folder" cạnh nút Thêm folder — nhớ lựa chọn lần trước trên máy này.
+  try { var rem = localStorage.getItem('fs.addSub'); if (rem !== null) $('add-sub').checked = rem === '1'; } catch (e) { /* bỏ qua */ }
+  $('add-sub').addEventListener('change', function () {
+    try { localStorage.setItem('fs.addSub', this.checked ? '1' : '0'); } catch (e) { /* bỏ qua */ }
+  });
 
   $('b-add').addEventListener('click', function () {
     var picked = FS.pickFolders(true, 'Chọn folder để theo dõi');
     if (!picked.length && !FS.isCEP) { msg('Xem trước: không mở được hộp chọn folder', 'err'); return; }
-    addPaths(picked);
+    addPaths(picked, $('add-sub').checked);
   });
 
   // ---------------------------------------------------------------- liên kết bin
+  // ---------------------------------------------------------------- thay đổi chưa lưu
+  function renderUnsaved() {
+    pending = DD.changes(base, draft, marked, relinks);
+    dirty = pending.length > 0;
+    $('unsaved').style.display = dirty ? '' : 'none';
+    var t = '⚠ Chưa lưu: ' + DD.summary(pending);
+    $('unsaved-txt').textContent = t;
+    $('unsaved').title = pending.map(function (c) { return DD.line(c, C.LABELS); }).join('\n') + '\n— bấm OK để lưu';
+  }
+
+  $('b-revert').addEventListener('click', function () {
+    reload();
+    msg('Đã bỏ mọi thay đổi chưa lưu', 'ok');
+  });
+
+  // Dòng đã ✕ → xoá thật khỏi bản nháp (ngay trước khi lưu).
+  function applyMarks() {
+    Object.keys(draft).forEach(function (docId) {
+      var entries = draft[docId].entries;
+      marked.forEach(function (id) {
+        var e = T.byId(entries, id);
+        if (!e) return;
+        removed.add(id);
+        T.descendants(entries, id).forEach(function (d) { removed.add(d.id); });
+        entries = T.remove(entries, id);
+      });
+      draft[docId].entries = entries;
+    });
+    marked = new Set();
+  }
+
   function save() {
+    applyMarks();
     store.update(function (cfg) {
       Object.keys(draft).forEach(function (docId) {
         var fresh = cfg.projects[docId] ? cfg.projects[docId].entries : [];
@@ -212,6 +280,8 @@
     });
     dirty = false;
     removed = new Set();
+    base = JSON.parse(JSON.stringify(store.load().projects));
+    relinks = [];
   }
 
   function link(folder) {
@@ -239,15 +309,33 @@
   // ---------------------------------------------------------------- OK / Huỷ
   $('b-ok').addEventListener('click', function () {
     if (dirty) {
+      var done = relinks.slice();
       save();
       FS.send(C.EVENTS.CONFIG_CHANGED, { what: 'entries' });
       var byDoc = {};
-      relinks.forEach(function (r) { (byDoc[r.docId] = byDoc[r.docId] || []).push({ oldRoot: r.oldRoot, newRoot: r.newRoot }); });
+      done.forEach(function (r) { (byDoc[r.docId] = byDoc[r.docId] || []).push({ oldRoot: r.oldRoot, newRoot: r.newRoot }); });
       Object.keys(byDoc).forEach(function (docId) { FS.send(C.EVENTS.COMMAND, { cmd: 'afterRelink', docId: docId, pairs: byDoc[docId] }); });
     }
     FS.closeSelf();
   });
-  $('b-cancel').addEventListener('click', function () { FS.closeSelf(); });
+  // Huỷ: còn thay đổi chưa lưu thì liệt kê ra và hỏi Quay lại / Thoát.
+  $('b-cancel').addEventListener('click', function () {
+    renderUnsaved();
+    if (!dirty) { FS.closeSelf(); return; }
+    FS_ASK.discard(pending.map(function (c) { return DD.line(c, C.LABELS); })).then(function (exit) {
+      if (exit) { reload(); FS.closeSelf(); }
+    });
+  });
+
+  // Báo cho panel chính biết còn thay đổi chưa bấm OK (để cảnh báo khi kéo folder vào panel chính).
+  var pubDirty = null, pubAt = 0;
+  setInterval(function () {
+    if (dirty === pubDirty && !(dirty && Date.now() - pubAt > 3000)) return;
+    pubDirty = dirty; pubAt = Date.now();
+    FS_ASK.setManagerDraft(dirty);
+  }, 400);
+  window.addEventListener('beforeunload', function () { FS_ASK.setManagerDraft(false); });
+  window.addEventListener('pagehide', function () { FS_ASK.setManagerDraft(false); });
 
   // Panel chính đóng → cửa sổ này đóng theo (thay đổi chưa bấm OK bị bỏ, như bấm Huỷ).
   FS.followParent(); // đóng theo panel chính

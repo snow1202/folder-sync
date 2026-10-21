@@ -1,5 +1,5 @@
 // Folder Sync — panel chính: WATCH / SYNC / 📁 / ⚙, dòng trạng thái, kéo-thả.
-/* global FS, FS_TIPS */
+/* global FS, FS_TIPS, FS_ASK */
 (function () {
   var C = FS.load('js/core/constants.js');
   var store = FS.load('js/core/config.js').createStore();
@@ -282,7 +282,7 @@
       if (b.docId && b.docId !== currentDoc) { currentDoc = b.docId; renderHistory(); }
       var proj = String(b.projectName || '').replace(/\.prproj$/i, '');
       $('target-bin').textContent = (proj ? proj + ' › ' : '') + (b.name || 'gốc project');
-      $('target-bin').title = 'Folder thả vào sẽ được thêm cho project ' + (proj || '?') + ', trong bin ' + (b.name || 'gốc');
+      $('target-bin').title = 'Folder kéo vào TIẾP THEO sẽ được thêm cho project ' + (proj || '?') + ', trong bin ' + (b.name || 'gốc') + '. Không ảnh hưởng folder đã theo dõi và nút SYNC.';
     }, function () { /* engine chưa sẵn sàng */ });
   }
   refreshTarget();
@@ -315,10 +315,21 @@
       try { if (require('fs').statSync(p).isDirectory()) paths.push(p); } catch (err) { /* bỏ qua */ }
     }
     if (paths.length) {
-      setStatus('busy', 'Đang thêm ' + paths.length + ' folder…');
-      FS.command('add', { paths: paths }).then(function (r) {
-        if (r) setStatus('ok', '+' + r.files + ' file · ' + paths.length + ' folder mới');
-      }, function (err) { setStatus('err', err.message); });
+      // Watch Folders còn thay đổi chưa bấm OK → thêm bây giờ sẽ dựa trên danh sách cũ (vd. folder vừa ✕ vẫn còn).
+      if (FS_ASK.managerUnsaved()) {
+        FS_ASK.notice('Watch Folders còn thay đổi chưa lưu',
+          'Bấm OK (lưu) hoặc Huỷ trong panel Watch Folders trước, rồi kéo folder vào lại. ' +
+          'Nếu không, folder sẽ được thêm theo danh sách cũ — ví dụ folder vừa bấm ✕ vẫn còn và vẫn vào bin cũ.');
+        return;
+      }
+      // Hỏi trước: lấy cả sub-folder hay chỉ file nằm trực tiếp trong folder.
+      FS_ASK.sub(paths, $('target-bin').textContent).then(function (sub) {
+        if (sub === null) return;
+        setStatus('busy', 'Đang thêm ' + paths.length + ' folder…');
+        FS.command('add', { paths: paths, sub: sub }).then(function (r) {
+          if (r) setStatus('ok', '+' + r.files + ' file · ' + paths.length + ' folder mới');
+        }, function (err) { setStatus('err', err.message); });
+      });
       return;
     }
     if (files.length) { setStatus('err', 'Chỉ nhận folder, không nhận file lẻ'); return; }

@@ -35,6 +35,7 @@
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M12 10v6M9 13h6"/></svg>
           Thêm folder
         </button>
+        <label class="check subpick" data-tip="addSub"><input type="checkbox" id="add-sub" checked /> Kèm sub-folder</label>
         <button type="button" class="btn" id="b-link" data-tip="link">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
           Liên kết bin đang chọn
@@ -42,6 +43,7 @@
         <span class="msg" id="msg"></span>
       </div>
       <div class="mright">
+        <span class="unsaved" id="unsaved" style="display:none"><span id="unsaved-txt"></span><button type="button" class="linkbtn" id="b-revert" data-tip="revertAll">↺ Bỏ hết</button></span>
         <button type="button" class="btn" id="b-cancel" data-tip="cancelMgr">Huỷ</button>
         <button type="button" class="btn primary" id="b-ok" data-tip="ok">OK</button>
       </div>
@@ -58,6 +60,7 @@
   <script src="js/panel/common.js"></script>
   <script src="js/panel/tips.js"></script>
   <script src="js/panel/theme.js"></script>
+  <script src="js/panel/ask.js"></script>
   <script src="js/panel/manager.js"></script>
 </body>
 </html>
