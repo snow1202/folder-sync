@@ -7,6 +7,9 @@
   <a href="#-tiếng-việt">🇻🇳 Tiếng Việt</a> · <a href="#-english">🇬🇧 English</a>
 </p>
 
+<p align="center"><a href="https://github.com/snow1202/folder-sync/releases/download/v1.0.3/Folder-Sync-Tutorial.mp4"><b>▶ Xem video hướng dẫn (1:31)</b></a> · <a href="https://github.com/snow1202/folder-sync/releases/download/v1.0.3/Folder-Sync-Tutorial.mp4">Watch the tutorial video</a><br/>
+<i>Phụ đề song ngữ Việt / Anh · Vietnamese & English subtitles</i></p>
+
 ---
 
 ## 🇻🇳 Tiếng Việt
