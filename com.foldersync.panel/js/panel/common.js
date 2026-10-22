@@ -141,7 +141,15 @@
     on(C.EVENTS.PANEL_CLOSED, function () { closeSelf(); });
     // fs.watch trên macOS có lúc báo trễ / không báo → đọc file (vài byte) mỗi 150 ms cho chắc.
     setInterval(check, 150);
-    setInterval(function () { if (Date.now() - last > C.CHILD_TIMEOUT_MS) closeSelf(); }, 1000);
+    // Hộp chọn folder (showOpenDialogEx) chặn JS của panel này trong lúc người dùng chọn → nhịp từ panel
+    // chính không đến được. Thấy đồng hồ của chính mình bị "đứng" quá 2,5 s thì tính lại từ đầu, không đóng.
+    var tick = Date.now();
+    setInterval(function () {
+      var now = Date.now();
+      if (now - tick > 2500) last = now;
+      tick = now;
+      if (now - last > C.CHILD_TIMEOUT_MS) closeSelf();
+    }, 1000);
   }
 
   function openExtension(id) { if (isCEP) cs.requestOpenExtension(id, ''); }

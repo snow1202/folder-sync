@@ -228,19 +228,6 @@ textarea:focus{outline:none;border-color:var(--accent-line)}
 .update-bar .ub-x{background:transparent;border:1px solid var(--line);color:var(--txt-dim);border-radius:6px;padding:5px 8px;font-size:11px;cursor:pointer}
 .update-bar .ub-x:hover{color:var(--txt)}
 
-/* ---------------------------------------------------------------- changelog */
-.ver{display:flex;align-items:center;gap:8px}
-.ver b{color:var(--txt-dim);font-weight:500}
-.clbtn{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;color:var(--muted);background:transparent;border:1px solid var(--line);border-radius:999px;padding:2px 8px;cursor:pointer}
-.clbtn:hover{color:var(--accent);border-color:var(--accent-line)}
-.cllist{flex:1;min-height:0;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:4px 14px}
-.clitem{padding:12px 0;border-bottom:1px solid var(--line-soft)}
-.clitem:last-child{border-bottom:0}
-.clhead{display:flex;align-items:baseline;gap:8px;font-size:12.5px}
-.clhead b{color:var(--accent);font-weight:600}
-.clhead span{color:var(--muted);font-family:var(--mono);font-size:10.5px}
-.clitem ul{margin:6px 0 0;padding-left:16px;color:var(--txt-dim);font-size:12px;line-height:1.55}
-
 /* hộp hỏi sub-folder khi kéo-thả */
 .ask{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:16px}
 .ask-box{width:100%;max-width:320px;background:var(--panel);border:1px solid var(--accent-line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:8px;box-shadow:0 18px 40px rgba(0,0,0,.5)}
@@ -266,3 +253,11 @@ textarea:focus{outline:none;border-color:var(--accent-line)}
 .ask-list{margin:0;padding-left:16px;font-size:11.5px;color:var(--txt);display:flex;flex-direction:column;gap:2px}
 .ask-list li{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ask-list li.more{color:var(--muted);list-style:none;margin-left:-16px}
+
+/* Watch Folders: chọn dòng để liên kết bin */
+.trow{cursor:default}
+.trow.picked{background:#1f2f27;box-shadow:inset 3px 0 0 var(--accent)}
+.lkbin{margin-left:8px;font-family:var(--mono);font-size:10px;color:var(--accent);white-space:nowrap}
+
+/* nhắc sau khi bấm một dòng đã import */
+.rhint{margin:0 0 8px;padding:7px 10px;border:1px solid #6b5317;background:#2a2210;border-radius:8px;color:#f3d48a;font-size:11px;line-height:1.45}

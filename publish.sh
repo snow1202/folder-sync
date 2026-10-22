@@ -14,7 +14,6 @@ VJSON="version.json"
 MANIFEST="com.foldersync.panel/CSXS/manifest.xml"
 CONSTS="com.foldersync.panel/js/core/constants.js"
 PANEL="com.foldersync.panel/panel.html"
-CHANGELOG="com.foldersync.panel/js/panel/changelog.js"
 
 branch=$(git symbolic-ref --short -q HEAD) || { echo "❌ Đang ở detached HEAD — chuyển về main trước."; exit 1; }
 [ "$branch" = "main" ] || { echo "❌ Đang ở nhánh '$branch'. Chỉ phát hành từ main (nút Cập nhật kéo origin/main)."; exit 1; }
@@ -33,7 +32,6 @@ msg="${*:-Folder Sync v$new}"
 if git ls-remote --exit-code --tags origin "refs/tags/v$new" >/dev/null 2>&1; then
   echo "❌ Tag v$new đã có trên GitHub — chọn version khác."; exit 1
 fi
-grep -q "v: \"$new\"" "$CHANGELOG" || { echo "❌ Chưa có mục cho v$new trong $CHANGELOG — thêm (mới nhất ở trên) rồi phát hành."; exit 1; }
 
 echo "→ Chạy test…"
 npm test >/dev/null 2>&1 || { echo "❌ Test lỗi — chạy 'npm test' để xem, sửa xong rồi phát hành."; exit 1; }
@@ -69,8 +67,7 @@ echo "✅ Đã push v$new lên GitHub."
 
 REPO_SLUG=$(git remote get-url origin | sed -e 's#.*github.com[:/]##' -e 's#\.git$##')
 if command -v gh >/dev/null 2>&1; then
-  notes=$(node -e "global.window={};require('./$CHANGELOG');const r=window.FS_CHANGELOG.find(x=>x.v==='$new');console.log(r.items.map(i=>'- '+i).join('\n'))")
-  notes="$notes
+  notes="$msg
 
 **Cài đặt (macOS):** mở Terminal và chạy
 \`\`\`

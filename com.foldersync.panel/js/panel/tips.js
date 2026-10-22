@@ -21,7 +21,6 @@
     addIgn: 'Thêm tên folder cần bỏ qua, hoặc /regex/ (vd. /_AME$/). Gõ rồi nhấn Enter.',
     removeItem: 'Bỏ mục này khỏi danh sách. Chỉ lưu khi bấm OK — bấm Huỷ nếu xoá nhầm.',
     regexTag: 'Mục này là regex (viết giữa hai dấu /), không phân biệt hoa/thường.',
-    changelog: 'Xem các thay đổi của từng phiên bản.',
     ubHide: 'Ẩn thông báo này (sẽ hiện lại lần mở panel sau nếu vẫn còn cần).',
     backSettings: 'Quay lại màn chính. Còn thay đổi chưa lưu thì sẽ hỏi trước.',
     cancelSettings: 'Đóng, bỏ mọi thay đổi chưa lưu.',
@@ -36,7 +35,8 @@
     revertAll: 'Bỏ mọi thay đổi chưa lưu, đưa danh sách về như lần lưu trước. Panel vẫn mở.',
     add: 'Chọn một hoặc nhiều folder để theo dõi. Bin được tạo trong bin đang chọn ở Project panel (chỉ lúc thêm; sau đó folder luôn đổ vào bin này). Ô Kèm sub-folder bên cạnh quyết định có lấy thư mục con không.',
     addSub: 'Tick: lấy cả thư mục con, mỗi thư mục con thành một bin con. Bỏ tick: chỉ lấy file nằm trực tiếp trong folder. Áp dụng cho folder thêm bằng nút Thêm folder; kéo-thả thì sẽ hỏi riêng.',
-    link: 'Liên kết bin đang chọn ở Project panel với folder trên ổ. Chỉ cần một file trong bin (hoặc bin con) là tự tìm ra folder cho cả cây bin — không tạo bin trùng.',
+    link: 'Đã chọn một dòng (bấm vào dòng): nối folder của dòng đó với bin đang chọn ở Project panel — file vào thẳng bin đó, không tạo bin trùng. Chưa chọn dòng: liên kết cây bin có sẵn với folder trên ổ (chỉ cần một file trong bin là tự tìm ra folder).',
+    linkedBin: 'Folder này sẽ đồng bộ thẳng vào bin này (bấm OK để lưu).',
     ok: 'Lưu thay đổi và đồng bộ ngay.',
     cancelMgr: 'Đóng, bỏ mọi thay đổi chưa lưu.',
   };

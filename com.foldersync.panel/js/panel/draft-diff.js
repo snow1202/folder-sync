@@ -31,6 +31,7 @@ function changes(base, draft, marked, relinks) {
         if (!parent || bById.has(parent.id)) out.push({ kind: 'add', name: basename(e.path) });
         continue;
       }
+      if (e._binName && (e.binNodeId || null) !== (old.binNodeId || null)) out.push({ kind: 'bin', name: basename(e.path), bin: e._binName });
       // SUB / label đổi ở cha thì lan xuống con → chỉ báo ở dòng cha
       const pOld = parent && bById.get(parent.id);
       const sameAsParent = (k) => parent && pOld && parent[k] !== pOld[k] && parent[k] === e[k];
@@ -44,13 +45,13 @@ function changes(base, draft, marked, relinks) {
   return out;
 }
 
-const KIND_SHORT = { remove: 'xoá', add: 'thêm', sub: 'SUB', label: 'label', relink: 'đường dẫn' };
+const KIND_SHORT = { remove: 'xoá', add: 'thêm', sub: 'SUB', label: 'label', relink: 'đường dẫn', bin: 'liên kết bin' };
 
 // "xoá 1 · thêm 2"
 function summary(list) {
   const n = {};
   for (const c of list) n[c.kind] = (n[c.kind] || 0) + 1;
-  return ['remove', 'add', 'sub', 'label', 'relink'].filter((k) => n[k]).map((k) => KIND_SHORT[k] + ' ' + n[k]).join(' · ');
+  return ['remove', 'add', 'sub', 'label', 'relink', 'bin'].filter((k) => n[k]).map((k) => KIND_SHORT[k] + ' ' + n[k]).join(' · ');
 }
 
 // Một dòng gọn cho hộp hỏi. labelNames: tên label theo số (C.LABELS).
@@ -61,6 +62,7 @@ function line(c, labelNames) {
     case 'sub': return (c.on ? 'Bật' : 'Tắt') + ' SUB: ' + c.name;
     case 'label': return 'Label ' + (c.label >= 0 && labelNames ? labelNames[c.label] : 'None') + ': ' + c.name;
     case 'relink': return 'Đổi đường dẫn: ' + c.from + ' → ' + c.name;
+    case 'bin': return 'Liên kết: ' + c.name + ' → bin "' + c.bin + '"';
     default: return c.name;
   }
 }

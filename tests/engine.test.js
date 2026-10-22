@@ -51,6 +51,30 @@ test('thêm folder → tạo cây bin trong bin đang chọn + import đủ + th
   assert.match(pp.events.at(-1).msg, /2 file, 2 thư mục con đã thêm vào/);
 });
 
+test('folder trùng tên bin đang chọn → đồng bộ thẳng vào bin đó, không tạo bin con cùng tên; bin con có sẵn được dùng lại', async () => {
+  const { disk, pr, engine, store } = setup();
+  mk(disk, 'v2/K1 OPT1.mp4');
+  mk(disk, 'v2/K2 Opt 1.mp4');
+  mk(disk, 'v2/Extra/e.mov');
+  const v2 = pr.rootItem.createBin('V2');           // khác hoa thường vẫn tính là trùng
+  const extra = v2.createBin('Extra');
+  pr.importFiles([path.join(disk, 'v2/K1 OPT1.mp4')], true, v2);   // file đã import tay từ trước
+  const r = await engine.addFolders('d1', [path.join(disk, 'v2')], { nodeId: v2.nodeId, name: 'V2' });
+  assert.equal(r.files, 2, 'chỉ import 2 file còn thiếu');
+  assert.deepEqual(names(v2), ['Extra', 'K1 OPT1.mp4', 'K2 Opt 1.mp4'], 'không có bin "v2" lồng bên trong');
+  assert.deepEqual(names(extra), ['e.mov'], 'bin con cùng tên có sẵn được dùng lại');
+  const root = store.load().projects.d1.entries.find((e) => !e.parentId);
+  assert.equal(root.binNodeId, String(v2.nodeId));
+});
+
+test('folder khác tên bin đang chọn → vẫn tạo bin mới bên trong như cũ', async () => {
+  const { disk, pr, engine } = setup();
+  mk(disk, 'Shoot/a.mov');
+  const parent = pr.rootItem.createBin('v2');
+  await engine.addFolders('d1', [path.join(disk, 'Shoot')], { nodeId: parent.nodeId, name: 'v2' });
+  assert.deepEqual(names(parent), ['Shoot']);
+});
+
 test('thêm folder với sub=false → chỉ file trực tiếp, không tạo bin con', async () => {
   const { disk, pr, engine, store } = setup();
   mk(disk, 'Assets/a.mov');

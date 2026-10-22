@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ExtensionManifest Version="7.0" ExtensionBundleId="com.foldersync.panel"
-    ExtensionBundleVersion="1.0.2" ExtensionBundleName="Folder Sync"
+    ExtensionBundleVersion="1.0.3" ExtensionBundleName="Folder Sync"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <ExtensionList>
-    <Extension Id="com.foldersync.panel.main" Version="1.0.2" />
-    <Extension Id="com.foldersync.panel.manager" Version="1.0.2" />
-    <Extension Id="com.foldersync.panel.engine" Version="1.0.2" />
+    <Extension Id="com.foldersync.panel.main" Version="1.0.3" />
+    <Extension Id="com.foldersync.panel.manager" Version="1.0.3" />
+    <Extension Id="com.foldersync.panel.engine" Version="1.0.3" />
   </ExtensionList>
   <ExecutionEnvironment>
     <HostList>

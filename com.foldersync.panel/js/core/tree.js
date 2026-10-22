@@ -121,7 +121,22 @@ function entryForPath(entries, absPath) {
   return best;
 }
 
+// Tên folder trùng tên bin đang chọn (không phân biệt hoa thường, chuẩn hoá Unicode).
+function sameBinName(a, b) {
+  const n = (s) => String(s || '').normalize('NFC').trim().toLowerCase();
+  return !!n(a) && n(a) === n(b);
+}
+
+// Bin cho folder gốc mới thêm. sel = bin đang chọn {nodeId, name}.
+// Folder trùng tên bin đang chọn → dùng luôn bin đó (đồng bộ vào bin có sẵn, không tạo bin con cùng tên);
+// ngược lại → tạo bin mới bên trong bin đang chọn.
+function rootTarget(absPath, sel) {
+  const name = path.basename(String(absPath).replace(/\/+$/, ''));
+  if (sel && sel.nodeId && sameBinName(name, sel.name)) return { binNodeId: String(sel.nodeId), parentBinNodeId: null, linked: true };
+  return { binNodeId: null, parentBinNodeId: (sel && sel.nodeId) ? String(sel.nodeId) : null, linked: false };
+}
+
 module.exports = {
   newId, byId, addRoot, addChild, children, descendants, rootOf,
-  setSetting, remove, isExcluded, relink, entryForPath,
+  setSetting, remove, isExcluded, relink, entryForPath, sameBinName, rootTarget,
 };

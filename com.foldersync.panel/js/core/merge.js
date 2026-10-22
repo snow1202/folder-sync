@@ -15,7 +15,8 @@ function mergeDraft(freshEntries, draftEntries, removedIds) {
   const out = draftEntries.map((d) => {
     const f = fresh.get(d.id);
     const e = Object.assign({}, d);
-    if (f) {
+    // _rebound: user vừa nối lại bin cho entry này trong bản nháp → không lấy bin cũ của engine.
+    if (f && !d._rebound) {
       if (!e.binNodeId && f.binNodeId) e.binNodeId = f.binNodeId;
       if (!e.parentBinNodeId && f.parentBinNodeId) e.parentBinNodeId = f.parentBinNodeId;
     }

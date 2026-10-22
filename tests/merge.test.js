@@ -43,3 +43,13 @@ test('folder gốc đã ✕ trong cửa sổ quản lý thì vẫn bị bỏ', (
   const out = mergeDraft(fresh, [E('a', null, '/a')], new Set(['b']));
   assert.deepEqual(out.map((e) => e.id), ['a']);
 });
+
+test('entry vừa nối lại bin trong bản nháp (_rebound) → không lấy lại bin cũ engine đã ghi', () => {
+  const { mergeDraft } = require('../com.foldersync.panel/js/core/merge.js');
+  const fresh = [{ id: 'r', parentId: null, path: '/d/v2', binNodeId: 'old', parentBinNodeId: 'p' }, { id: 'c', parentId: 'r', path: '/d/v2/A', binNodeId: 'oldA' }];
+  const draft = [{ id: 'r', parentId: null, path: '/d/v2', binNodeId: 'new', parentBinNodeId: null, _rebound: true }, { id: 'c', parentId: 'r', path: '/d/v2/A', binNodeId: null, _rebound: true }];
+  const out = mergeDraft(fresh, draft, new Set());
+  assert.equal(out.find((e) => e.id === 'r').binNodeId, 'new');
+  assert.equal(out.find((e) => e.id === 'r').parentBinNodeId, null);
+  assert.equal(out.find((e) => e.id === 'c').binNodeId, null, 'bin con để engine tìm / tạo lại trong bin mới');
+});

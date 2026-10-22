@@ -73,3 +73,12 @@ test('entryForPath chọn entry sâu nhất', () => {
   assert.equal(T.entryForPath(e, '/d/Assets/x.mov'), root);
   assert.equal(T.entryForPath(e, '/other/x.mov'), null);
 });
+
+test('rootTarget: folder trùng tên bin đang chọn → dùng luôn bin đó; khác tên / gốc project → tạo bin bên trong', () => {
+  const T = require('../com.foldersync.panel/js/core/tree.js');
+  assert.deepEqual(T.rootTarget('/d/v2', { nodeId: 'n9', name: 'v2' }), { binNodeId: 'n9', parentBinNodeId: null, linked: true });
+  assert.equal(T.rootTarget('/d/V2/', { nodeId: 'n9', name: ' v2 ' }).linked, true);
+  assert.equal(T.rootTarget('/d/Tiếng Việt'.normalize('NFD'), { nodeId: 'n9', name: 'Tiếng Việt' }).linked, true, 'NFD vs NFC');
+  assert.deepEqual(T.rootTarget('/d/Shoot', { nodeId: 'n9', name: 'v2' }), { binNodeId: null, parentBinNodeId: 'n9', linked: false });
+  assert.equal(T.rootTarget('/d/x', { nodeId: 'root', name: '' }).linked, false);
+});

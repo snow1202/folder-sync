@@ -26,7 +26,7 @@
             </span>
             FOLDER SYNC
           </div>
-          <div class="ver"><button type="button" class="clbtn" id="cl-open" data-tip="changelog">Changelog</button><b id="ver">V1.0.2</b></div>
+          <div class="ver"><b id="ver">V1.0.3</b></div>
         </div>
 
         <div class="actions">
@@ -81,6 +81,7 @@
         <span data-tip="history">ĐÃ IMPORT · <b id="h-count">0</b></span>
         <span id="h-clear-box"><button type="button" class="linkbtn" id="h-clear" data-tip="clearHistory">Xoá danh sách</button></span>
       </div>
+      <div class="rhint" id="r-hint" style="display:none"></div>
       <div class="alist" id="h-list"></div>
     </div>
   </div>
@@ -134,17 +135,6 @@
     </div>
   </div>
 
-  <!-- Màn Changelog -->
-  <div class="setw" id="changelog-area" style="display:none">
-    <div class="shead2">
-      <button type="button" class="iconbtn" id="cl-back" aria-label="Quay lại">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-      </button>
-      <span class="mtitle">CHANGELOG</span>
-    </div>
-    <div class="cllist" id="cl-list"></div>
-  </div>
-
   <script src="js/lib/CSInterface.js"></script>
   <script src="js/panel/preview.js"></script>
   <script src="js/panel/common.js"></script>
@@ -152,7 +142,6 @@
   <script src="js/panel/theme.js"></script>
   <script src="js/panel/ask.js"></script>
   <script src="js/engine/boot.js"></script>
-  <script src="js/panel/changelog.js"></script>
   <script src="js/panel/settingswin.js"></script>
   <script src="js/panel/main.js"></script>
   <script src="js/panel/updater.js"></script>

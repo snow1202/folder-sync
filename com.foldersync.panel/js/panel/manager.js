@@ -15,6 +15,7 @@
   var relinks;        // [{docId, oldRoot, newRoot}]
   var dirty = false;  // = còn thay đổi chưa lưu (tính lại mỗi lần render)
   var pending = [];   // danh sách thay đổi chưa lưu (draft-diff)
+  var picked = null;  // dòng đang chọn {docId, id} — dùng cho "Liên kết bin đang chọn"
   var collapsed = {}; // id → true
   var states = {};    // id → 'ok'|'offline'|'busy'|'error'
   var openProjects = null; // [{documentID, name, active}] — null = chưa biết (hiện tất cả)
@@ -78,8 +79,18 @@
 
   function row(docId, entries, e, depth) {
     var gone = isGone(entries, e);
-    var r = el('div', 'trow' + (gone ? ' gone' : ''));
+    var isPicked = !!(picked && picked.docId === docId && picked.id === e.id);
+    var r = el('div', 'trow' + (gone ? ' gone' : '') + (isPicked ? ' picked' : ''));
     var st = states[e.id] || 'unknown';
+    // Bấm vào dòng (ngoài các nút / ô chọn / đường dẫn) để chọn dòng đó — rồi bấm "Liên kết bin đang chọn".
+    if (!gone) {
+      r.addEventListener('click', function (ev) {
+        if (ev.target.closest && ev.target.closest('button,input,select,.path')) return;
+        picked = isPicked ? null : { docId: docId, id: e.id };
+        msg(picked ? 'Đã chọn "' + basename(e.path) + '" — chọn bin ở Project panel rồi bấm Liên kết bin đang chọn' : '');
+        render();
+      });
+    }
 
     var c0 = el('div', 'cell-c');
     var dot = el('div', 'sdot ' + st);
@@ -98,6 +109,7 @@
       render();
     });
     var nm = el('span', '', basename(e.path));
+    if (e._binName) { var lk = el('span', 'lkbin', '→ bin "' + e._binName + '"'); lk.setAttribute('data-tip', 'linkedBin'); nm.appendChild(lk); }
     nm.setAttribute('data-tip', 'name');
     c1.appendChild(fold); c1.appendChild(nm);
 
@@ -206,14 +218,16 @@
     if (!paths.length) return;
     FS.command('selectedBin', {}, 8000).then(function (sb) {
       var proj = String(sb.projectName || '').replace(/\.prproj$/i, '');
-      var ask = sub === undefined ? FS_ASK.sub(paths, (proj ? proj + ' › ' : '') + (sb.name || 'gốc project')) : Promise.resolve(sub);
+      var linked = paths.filter(function (p) { return T.rootTarget(p, sb).linked; }).length;
+      var where = (proj ? proj + ' › ' : '') + (sb.name || 'gốc project') + (linked ? ' (bin có sẵn cùng tên — đồng bộ thẳng vào bin này)' : '');
+      var ask = sub === undefined ? FS_ASK.sub(paths, where) : Promise.resolve(sub);
       return ask.then(function (withSub) {
         if (withSub === null) return;
         if (!draft[sb.docId]) draft[sb.docId] = { path: sb.projectPath || '', name: sb.projectName || '', entries: [] };
-        paths.forEach(function (p) { T.addRoot(draft[sb.docId].entries, { path: p, parentBinNodeId: sb.nodeId, sub: withSub }); });
+        paths.forEach(function (p) { T.addRoot(draft[sb.docId].entries, Object.assign({ path: p, sub: withSub }, T.rootTarget(p, sb))); });
         dirty = true;
         msg('Đã thêm ' + paths.length + ' folder' + (withSub ? ' (kèm sub-folder)' : ' (không kèm sub-folder)') +
-          ' → bin "' + (sb.name || 'gốc project') + '". Bấm OK để import.', 'ok');
+          (linked ? ' → đồng bộ thẳng vào bin "' + sb.name + '" có sẵn' : ' → bin "' + (sb.name || 'gốc project') + '"') + '. Bấm OK để import.', 'ok');
         render();
       });
     }).catch(function (e) { msg(e.message, 'err'); });
@@ -301,7 +315,26 @@
     }, function (e) { msg(e.message, 'err'); });
   }
 
+  // Có dòng đang chọn → nối folder của dòng đó với bin đang chọn ở Project panel (chỉ trong bản nháp, lưu khi OK).
+  function linkPicked() {
+    FS.command('selectedBin', {}, 8000).then(function (sb) {
+      if (!picked) return;
+      if (keyFor({ documentID: sb.docId, path: sb.projectPath }) !== picked.docId) { msg('Bin đang chọn thuộc project khác — chọn bin trong đúng project của dòng này', 'err'); return; }
+      if (!sb.name) { msg('Hãy chọn một bin ở Project panel (không phải gốc project)', 'err'); return; }
+      var entries = draft[picked.docId].entries, e = T.byId(entries, picked.id);
+      if (!e) { picked = null; render(); return; }
+      e.binNodeId = String(sb.nodeId); e._rebound = true; e._binName = sb.name;
+      if (!e.parentId) e.parentBinNodeId = null;
+      // Folder con: bỏ bin cũ, engine tìm / tạo bin cùng tên bên trong bin mới.
+      T.descendants(entries, e.id).forEach(function (d) { d.binNodeId = null; d.parentBinNodeId = null; d._rebound = true; delete d._binName; });
+      msg('"' + basename(e.path) + '" sẽ đồng bộ thẳng vào bin "' + sb.name + '" — bấm OK để lưu', 'ok');
+      picked = null;
+      render();
+    }).catch(function (err) { msg(err.message, 'err'); });
+  }
+
   $('b-link').addEventListener('click', function () {
+    if (picked) { linkPicked(); return; }
     if (dirty) { save(); FS.send(C.EVENTS.CONFIG_CHANGED, { what: 'entries' }); }
     link(null);
   });

@@ -29,23 +29,6 @@
   window.addEventListener('pagehide', onClose);
   $('ver').textContent = 'V' + C.VERSION;
 
-  // Changelog: thay toàn bộ panel như màn Cài đặt.
-  function renderChangelog() {
-    var box = $('cl-list');
-    box.innerHTML = '';
-    (window.FS_CHANGELOG || []).forEach(function (r) {
-      var it = document.createElement('div'); it.className = 'clitem';
-      var h = document.createElement('div'); h.className = 'clhead';
-      var b = document.createElement('b'); b.textContent = 'v' + r.v;
-      var d = document.createElement('span'); d.textContent = r.date || '';
-      h.appendChild(b); h.appendChild(d); it.appendChild(h);
-      var ul = document.createElement('ul');
-      (r.items || []).forEach(function (t) { var li = document.createElement('li'); li.textContent = t; ul.appendChild(li); });
-      it.appendChild(ul); box.appendChild(it);
-    });
-  }
-  $('cl-open').addEventListener('click', function () { renderChangelog(); $('main-area').style.display = 'none'; $('changelog-area').style.display = ''; });
-  $('cl-back').addEventListener('click', function () { $('changelog-area').style.display = 'none'; $('main-area').style.display = ''; });
 
   // ---------------------------------------------------------------- WATCH
   function renderWatch(on) {
@@ -205,10 +188,24 @@
           if (res === 'missing') setStatus('err', 'Không còn trong project', it.name + ' đã bị xoá khỏi project (file vẫn còn trên ổ).');
           else if (res === 'bin') setStatus('ok', 'Đã chọn bin ' + (it.bin || ''));
           else setStatus('ok', 'Đã chọn ' + it.name);
+          if (res !== 'missing') showRevealHint(it);
         }, function (e) { setStatus('err', e.message); });
       });
       box.appendChild(r);
     });
+  }
+
+  // Premiere chỉ chọn được clip trong panel Project chính, không đưa tab đó lên trước và không
+  // điều khiển được tab "Bin: …" mở riêng → nhắc người dùng xem ở đâu.
+  var hintTimer = null;
+  function showRevealHint(it) {
+    var proj = lastSel && lastSel.docId === it.docId ? String(lastSel.projectName || '').replace(/\.prproj$/i, '') : '';
+    var h = $('r-hint');
+    h.textContent = 'Đã chọn "' + it.name + '" trong tab Project' + (proj ? ': ' + proj : '') + (it.bin ? ' › ' + it.bin : '') +
+      ' — đang mở tab "Bin: …" khác thì chuyển sang tab Project để thấy.';
+    h.style.display = '';
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(function () { h.style.display = 'none'; }, 7000);
   }
 
   FS.on(C.EVENTS.HISTORY, function (d) { if (d.docId === currentDoc) renderHistory(d.items); });
@@ -275,10 +272,12 @@
   }, 2000);
 
   // Bin đích khi thả folder = bin đang chọn ở Project panel.
+  var lastSel = null;
   function refreshTarget() {
     if (document.hidden) return;
     FS.command('selectedBin', {}, 4000).then(function (b) {
       if (!b) return;
+      lastSel = b;
       if (b.docId && b.docId !== currentDoc) { currentDoc = b.docId; renderHistory(); }
       var proj = String(b.projectName || '').replace(/\.prproj$/i, '');
       $('target-bin').textContent = (proj ? proj + ' › ' : '') + (b.name || 'gốc project');
@@ -323,7 +322,10 @@
         return;
       }
       // Hỏi trước: lấy cả sub-folder hay chỉ file nằm trực tiếp trong folder.
-      FS_ASK.sub(paths, $('target-bin').textContent).then(function (sub) {
+      // Folder trùng tên bin đang chọn → engine đồng bộ thẳng vào bin đó (không tạo bin con cùng tên).
+      var T = FS.load('js/core/tree.js');
+      var linked = lastSel && paths.some(function (p) { return T.rootTarget(p, lastSel).linked; });
+      FS_ASK.sub(paths, $('target-bin').textContent + (linked ? ' (bin có sẵn cùng tên — đồng bộ thẳng vào bin này)' : '')).then(function (sub) {
         if (sub === null) return;
         setStatus('busy', 'Đang thêm ' + paths.length + ' folder…');
         FS.command('add', { paths: paths, sub: sub }).then(function (r) {

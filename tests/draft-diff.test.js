@@ -39,3 +39,11 @@ test('đổi đường dẫn → 1 dòng', () => {
   const r = changes(base(), clone(base()), new Set(), [{ docId: 'd1', oldRoot: '/a/Old', newRoot: '/b/New' }]);
   assert.deepEqual(r.map((c) => line(c)), ['Đổi đường dẫn: Old → New']);
 });
+
+test('nối lại bin cho một dòng → 1 dòng "Liên kết"', () => {
+  const d = clone(base());
+  Object.assign(d.d1.entries.find((e) => e.id === 'r'), { binNodeId: 'n9', _rebound: true, _binName: 'v2' });
+  const r = changes(base(), d, new Set(), []);
+  assert.deepEqual(r.map((c) => line(c)), ['Liên kết: AI → bin "v2"']);
+  assert.equal(summary(r), 'liên kết bin 1');
+});

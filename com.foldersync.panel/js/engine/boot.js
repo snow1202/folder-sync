@@ -134,8 +134,8 @@
           case 'status': engine.emitStatus(); return true;
           case 'add': {
             var docId = d.docId || (await activeProject()).documentID;
-            var bin = d.parentBinNodeId || (await host.getSelectedBin(docId)).nodeId;
-            return engine.addFolders(docId, d.paths || [], bin, d.sub);
+            var sel = d.parentBinNodeId ? { nodeId: d.parentBinNodeId, name: d.parentBinName || '' } : await host.getSelectedBin(docId);
+            return engine.addFolders(docId, d.paths || [], sel, d.sub);
           }
           case 'link': {
             var doc = d.docId || (await activeProject()).documentID;
