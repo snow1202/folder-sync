@@ -73,24 +73,11 @@ function createStore(dir) {
   return { load, save, update, file, dir: base };
 }
 
+// Project nhận diện CHỈ bằng documentID (Premiere ghi trong .prproj, giữ nguyên qua mọi lần lưu, đổi tên/di chuyển file).
+// Không dò theo đường dẫn: project mới tạo trùng tên/chỗ với project cũ là project KHÁC (có ID khác).
+// Save As tạo ID mới — engine tự nhận ra và chép danh sách folder sang (xem detectSaveAs trong engine).
 function findProject(cfg, info) {
-  if (info.documentID && cfg.projects[info.documentID]) {
-    return { key: info.documentID, project: cfg.projects[info.documentID] };
-  }
-  if (info.path) {
-    const want = pathkey(info.path);
-    for (const k of Object.keys(cfg.projects)) {
-      const p = cfg.projects[k];
-      if (p.path && pathkey(p.path) === want) {
-        if (info.documentID && info.documentID !== k) {
-          cfg.projects[info.documentID] = p;
-          delete cfg.projects[k];
-          return { key: info.documentID, project: p };
-        }
-        return { key: k, project: p };
-      }
-    }
-  }
+  if (info.documentID && cfg.projects[info.documentID]) return { key: info.documentID, project: cfg.projects[info.documentID] };
   return null;
 }
 

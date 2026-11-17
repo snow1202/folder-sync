@@ -1,5 +1,5 @@
 // Folder Sync — hộp hỏi "có lấy cả sub-folder không" khi kéo folder từ Finder vào panel.
-// FS_ASK.sub(paths, đích) → Promise: true (kèm sub-folder) | false (chỉ file trong folder) | null (huỷ).
+// FS_ASK.sub(paths, đích, {binName}) → Promise {sub, direct} | null — xem ghi chú ở hàm.
 // FS_ASK.notice(tiêu đề, nội dung) → hộp báo 1 nút. FS_ASK.setManagerDraft / managerUnsaved: Watch Folders
 // ghi ra file "đang có thay đổi chưa bấm OK" để panel chính cảnh báo khi kéo folder vào.
 /* global FS */
@@ -12,25 +12,75 @@
   }
   function base(p) { return String(p).replace(/\/+$/, '').split('/').pop(); }
 
-  function sub(paths, target) {
+  // FS_ASK.sub(paths, đích, {binName}) → Promise {sub, direct} | null (huỷ).
+  // Hộp gồm các nhóm lựa chọn + nút OK / Huỷ; chỉ hỏi những gì cần:
+  //  - "Thêm vào đâu?": khi đang chọn một bin và tên khác folder → sync thẳng vào bin đó / tạo bin cùng tên folder bên trong.
+  //  - "Import cả sub-folder?": chỉ khi folder kéo vào thật sự có thư mục con (tự dò trên ổ).
+  // Không còn gì để hỏi → không hiện hộp, trả kết quả ngay.
+  function sameName(a, b) { return String(a || '').normalize('NFC').trim().toLowerCase() === String(b || '').normalize('NFC').trim().toLowerCase(); }
+  function hasSubfolders(p) {
+    if (!FS.isCEP) return true; // xem trước trên trình duyệt: không đọc được ổ
+    try {
+      return require('fs').readdirSync(p, { withFileTypes: true }).some(function (d) { return d.isDirectory() && d.name.charAt(0) !== '.'; });
+    } catch (e) { return true; }
+  }
+  function sub(paths, target, opts) {
+    opts = opts || {};
+    var names = paths.map(base);
+    var bin = opts.binName || '';
+    var askWhere = !!bin && names.some(function (n) { return !sameName(n, bin); });
+    var askSub = paths.some(hasSubfolders);
+    if (!askWhere && !askSub) return Promise.resolve({ sub: true, direct: false });
+
     return new Promise(function (resolve) {
+      var state = { direct: true, sub: true };
       var ov = el('div', 'ask');
       var box = el('div', 'ask-box');
-      box.appendChild(el('div', 'ask-title', 'Import cả sub-folder?'));
-      var names = paths.map(base);
+      box.appendChild(el('div', 'ask-title', 'Thêm folder'));
       box.appendChild(el('div', 'ask-what', names.length > 3 ? names.slice(0, 3).join(', ') + ' và ' + (names.length - 3) + ' folder khác' : names.join(', ')));
-      if (target) box.appendChild(el('div', 'ask-to', '→ ' + target));
-      var yes = el('button', 'btn primary', 'Có — kèm sub-folder');
-      yes.title = 'Mỗi thư mục con thành một bin con; thư mục con tạo sau này cũng tự được thêm.';
-      var no = el('button', 'btn', 'Không — chỉ file trong folder');
-      no.title = 'Chỉ import file nằm trực tiếp trong folder, bỏ qua mọi thư mục con.';
-      var cancel = el('button', 'linkbtn', 'Huỷ');
-      [yes, no, cancel].forEach(function (b) { b.type = 'button'; });
-      var row = el('div', 'ask-btns');
-      row.appendChild(yes); row.appendChild(no);
-      box.appendChild(row);
-      box.appendChild(el('div', 'ask-note', 'Đổi sau được bằng cột SUB trong Watch folders.'));
-      var foot = el('div', 'ask-foot'); foot.appendChild(cancel); box.appendChild(foot);
+      var to = el('div', 'ask-to');
+      box.appendChild(to);
+      var groups = [];
+
+      // nhóm lựa chọn kiểu radio: items [[value, nhãn, tooltip]]
+      function group(title, key, items) {
+        box.appendChild(el('div', 'ask-sub', title));
+        var wrap = el('div', 'ask-pick');
+        var btns = items.map(function (it) {
+          var b = el('button', 'ask-opt', it[1]);
+          b.type = 'button'; b.title = it[2];
+          b.addEventListener('click', function () { state[key] = it[0]; paint(); });
+          wrap.appendChild(b);
+          return { b: b, v: it[0] };
+        });
+        box.appendChild(wrap);
+        groups.push({ key: key, btns: btns });
+      }
+      if (askWhere) {
+        group('Thêm vào đâu?', 'direct', [
+          [true, 'Sync thẳng vào bin "' + bin + '"', 'File (và bin con của thư mục con) vào thẳng bin đang chọn, không tạo bin mới.'],
+          [false, names.length === 1 ? 'Tạo bin "' + names[0] + '" bên trong "' + bin + '"' : 'Tạo bin mới cho từng folder bên trong "' + bin + '"', 'Tạo bin cùng tên folder bên trong bin đang chọn rồi import vào đó.'],
+        ]);
+      }
+      if (askSub) {
+        group('Import cả sub-folder?', 'sub', [
+          [true, 'Có — kèm sub-folder', 'Mỗi thư mục con thành một bin con; thư mục con tạo sau này cũng tự được thêm.'],
+          [false, 'Không — chỉ file trong folder', 'Chỉ import file nằm trực tiếp trong folder, bỏ qua mọi thư mục con.'],
+        ]);
+        box.appendChild(el('div', 'ask-note', 'Đổi sau được bằng cột SUB trong Watch folders.'));
+      }
+      function paint() {
+        groups.forEach(function (g) { g.btns.forEach(function (x) { x.b.classList.toggle('on', state[g.key] === x.v); }); });
+        var t = target || '';
+        if (askWhere && !state.direct) t += ' › ' + (names.length === 1 ? names[0] : '<tên folder>');
+        to.textContent = '→ ' + t + (bin && !askWhere ? ' (bin có sẵn cùng tên — sync thẳng vào bin này)' : '');
+      }
+      paint();
+
+      var cancel = el('button', 'btn', 'Huỷ');
+      var ok = el('button', 'btn primary', 'OK');
+      cancel.type = 'button'; ok.type = 'button';
+      var foot = el('div', 'ask-foot'); foot.appendChild(cancel); foot.appendChild(ok); box.appendChild(foot);
       ov.appendChild(box);
       document.body.appendChild(ov);
 
@@ -39,13 +89,16 @@
         ov.remove();
         resolve(v);
       }
-      function onKey(e) { if (e.key === 'Escape') { e.stopPropagation(); done(null); } }
+      function finish() { done({ sub: askSub ? state.sub : true, direct: askWhere ? state.direct : false }); }
+      function onKey(e) {
+        if (e.key === 'Escape') { e.stopPropagation(); done(null); }
+        else if (e.key === 'Enter') { e.stopPropagation(); e.preventDefault(); finish(); }
+      }
       document.addEventListener('keydown', onKey, true);
-      yes.addEventListener('click', function () { done(true); });
-      no.addEventListener('click', function () { done(false); });
+      ok.addEventListener('click', finish);
       cancel.addEventListener('click', function () { done(null); });
       ov.addEventListener('click', function (e) { if (e.target === ov) done(null); });
-      setTimeout(function () { yes.focus(); }, 0);
+      setTimeout(function () { ok.focus(); }, 0);
     });
   }
 

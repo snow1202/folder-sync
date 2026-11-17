@@ -36,6 +36,7 @@
     add: 'Chọn một hoặc nhiều folder để theo dõi. Bin được tạo trong bin đang chọn ở Project panel (chỉ lúc thêm; sau đó folder luôn đổ vào bin này). Ô Kèm sub-folder bên cạnh quyết định có lấy thư mục con không.',
     addSub: 'Tick: lấy cả thư mục con, mỗi thư mục con thành một bin con. Bỏ tick: chỉ lấy file nằm trực tiếp trong folder. Áp dụng cho folder thêm bằng nút Thêm folder; kéo-thả thì sẽ hỏi riêng.',
     link: 'Đã chọn một dòng (bấm vào dòng): nối folder của dòng đó với bin đang chọn ở Project panel — file vào thẳng bin đó, không tạo bin trùng. Chưa chọn dòng: liên kết cây bin có sẵn với folder trên ổ (chỉ cần một file trong bin là tự tìm ra folder).',
+    binCol: 'Bin trong Project panel mà folder này đang đổ file vào. Bấm tên bin để Premiere chọn bin đó (trong tab Project chính).',
     linkedBin: 'Folder này sẽ đồng bộ thẳng vào bin này (bấm OK để lưu).',
     ok: 'Lưu thay đổi và đồng bộ ngay.',
     cancelMgr: 'Đóng, bỏ mọi thay đổi chưa lưu.',

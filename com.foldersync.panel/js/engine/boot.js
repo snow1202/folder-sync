@@ -62,7 +62,7 @@
         history.add(items);
         if (active) FS.send(C.EVENTS.HISTORY, { docId: items[0].docId, items: items });
       },
-      onRekey: function (oldId, newId) { history.rekey(oldId, newId); },
+      onSaveAs: function () { /* danh sách file đã import của bản mới bắt đầu trống */ },
       emit: function (type, data) {
         if (!active) return;
         if (type === C.EVENTS.STATUS) data = Object.assign({ engine: kind, instance: instance, engineFp: engineFp }, data);
@@ -135,7 +135,7 @@
           case 'add': {
             var docId = d.docId || (await activeProject()).documentID;
             var sel = d.parentBinNodeId ? { nodeId: d.parentBinNodeId, name: d.parentBinName || '' } : await host.getSelectedBin(docId);
-            return engine.addFolders(docId, d.paths || [], sel, d.sub);
+            return engine.addFolders(docId, d.paths || [], sel, d.sub, d.direct);
           }
           case 'link': {
             var doc = d.docId || (await activeProject()).documentID;

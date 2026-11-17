@@ -15,7 +15,9 @@
   var relinks;        // [{docId, oldRoot, newRoot}]
   var dirty = false;  // = còn thay đổi chưa lưu (tính lại mỗi lần render)
   var pending = [];   // danh sách thay đổi chưa lưu (draft-diff)
-  var picked = null;  // dòng đang chọn {docId, id} — dùng cho "Liên kết bin đang chọn"
+  var picked = null;  // dòng đang chọn {docId, id}
+  var host = FS.isCEP ? FS.load('js/engine/bridge.js').createBridge(FS.cs) : null;
+  var binInfo = {};   // docId → {nodeId: 'Bin › Bin con'} — bin còn tồn tại trong project (cột BIN) — dùng cho "Liên kết bin đang chọn"
   var collapsed = {}; // id → true
   var states = {};    // id → 'ok'|'offline'|'busy'|'error'
   var openProjects = null; // [{documentID, name, active}] — null = chưa biết (hiện tất cả)
@@ -85,7 +87,7 @@
     // Bấm vào dòng (ngoài các nút / ô chọn / đường dẫn) để chọn dòng đó — rồi bấm "Liên kết bin đang chọn".
     if (!gone) {
       r.addEventListener('click', function (ev) {
-        if (ev.target.closest && ev.target.closest('button,input,select,.path')) return;
+        if (ev.target.closest && ev.target.closest('button,input,select,.path,.bincell')) return;
         picked = isPicked ? null : { docId: docId, id: e.id };
         msg(picked ? 'Đã chọn "' + basename(e.path) + '" — chọn bin ở Project panel rồi bấm Liên kết bin đang chọn' : '');
         render();
@@ -133,6 +135,8 @@
     });
     c2.appendChild(p);
 
+    var c2b = el('div'); c2b.appendChild(binCell(docId, e));
+
     var c3 = el('div', 'cell-c');
     var cb = el('input', 'cb');
     cb.type = 'checkbox';
@@ -167,8 +171,56 @@
     }
     if (gone) { cb.disabled = true; c4.firstChild.disabled = true; }
 
-    [c0, c1, c2, c3, c4, c5].forEach(function (c) { r.appendChild(c); });
+    [c0, c1, c2, c2b, c3, c4, c5].forEach(function (c) { r.appendChild(c); });
     return r;
+  }
+
+  // Cột BIN: folder này đang đổ vào bin nào.
+  function binCell(docId, e) {
+    var map = binInfo[docId];
+    var c = el('div', 'bincell');
+    var txt, cls, tip;
+    if (e._binName) { cls = 'pend'; txt = '→ ' + e._binName + ' (chưa lưu)'; tip = 'Sẽ đồng bộ vào bin này sau khi bấm OK.'; }
+    else if (!e.binNodeId) { cls = 'wait'; txt = 'chưa tạo'; tip = 'Bin sẽ được tạo ở lần sync tới.'; }
+    else if (!map) { cls = 'wait'; txt = '…'; tip = 'Đang đọc cây bin của project.'; }
+    else if (map[e.binNodeId] === undefined) { cls = 'lost'; txt = 'không thấy bin'; tip = 'Bin đã bị xoá khỏi project — sẽ được tạo lại ở lần sync tới.'; }
+    else { cls = 'ok'; txt = map[e.binNodeId] || 'gốc project'; tip = 'Bấm để chọn bin "' + txt + '" trong tab Project.'; }
+    c.className = 'bincell ' + cls;
+    var inner = el('span', 'ltr', txt);
+    c.appendChild(inner);
+    c.title = tip;
+    if (cls === 'ok' && host) {
+      c.addEventListener('click', function () {
+        host.revealItem(docId, e.binNodeId).then(function (res) {
+          msg(res === 'missing' ? 'Không thấy bin trong project' : 'Đã chọn bin "' + txt + '" trong tab Project', res === 'missing' ? 'err' : 'ok');
+        }, function (err) { msg(err.message, 'err'); });
+      });
+    }
+    return c;
+  }
+
+  // Đọc tên / đường dẫn bin cho mọi entry của các project đang mở (đổi thì vẽ lại).
+  function loadBins() {
+    if (!host) {
+      // xem trước trên trình duyệt: giả lập
+      var changed = false;
+      Object.keys(draft).forEach(function (docId) {
+        var m = {}; draft[docId].entries.forEach(function (e) { if (e.binNodeId) m[e.binNodeId] = 'Source › ' + basename(e.path); });
+        if (JSON.stringify(m) !== JSON.stringify(binInfo[docId])) { binInfo[docId] = m; changed = true; }
+      });
+      if (changed) render();
+      return;
+    }
+    (openProjects || []).forEach(function (p) {
+      var docId = p.documentID;
+      if (!draft[docId]) return;
+      var ids = draft[docId].entries.map(function (e) { return e.binNodeId; }).filter(Boolean);
+      if (!ids.length) return;
+      host.binPaths(docId, ids).then(function (m) {
+        if (JSON.stringify(m) === JSON.stringify(binInfo[docId])) return;
+        binInfo[docId] = m; render();
+      }, function () { /* project vừa đóng */ });
+    });
   }
 
   function render() {
@@ -218,13 +270,15 @@
     if (!paths.length) return;
     FS.command('selectedBin', {}, 8000).then(function (sb) {
       var proj = String(sb.projectName || '').replace(/\.prproj$/i, '');
-      var linked = paths.filter(function (p) { return T.rootTarget(p, sb).linked; }).length;
-      var where = (proj ? proj + ' › ' : '') + (sb.name || 'gốc project') + (linked ? ' (bin có sẵn cùng tên — đồng bộ thẳng vào bin này)' : '');
-      var ask = sub === undefined ? FS_ASK.sub(paths, where) : Promise.resolve(sub);
-      return ask.then(function (withSub) {
-        if (withSub === null) return;
+      var where = (proj ? proj + ' › ' : '') + (sb.name || 'gốc project');
+      // Kéo-thả: hộp hỏi (có chọn sync thẳng / tạo bin bên trong). Nút Thêm folder: theo ô tick, chỉ sync thẳng khi trùng tên.
+      var ask = sub === undefined ? FS_ASK.sub(paths, where, { binName: sb.name }) : Promise.resolve({ sub: sub, direct: false });
+      return ask.then(function (ans) {
+        if (ans === null) return;
+        var withSub = ans.sub;
         if (!draft[sb.docId]) draft[sb.docId] = { path: sb.projectPath || '', name: sb.projectName || '', entries: [] };
-        paths.forEach(function (p) { T.addRoot(draft[sb.docId].entries, Object.assign({ path: p, sub: withSub }, T.rootTarget(p, sb))); });
+        var linked = paths.filter(function (p) { return T.rootTarget(p, sb, ans.direct).linked; }).length;
+        paths.forEach(function (p) { T.addRoot(draft[sb.docId].entries, Object.assign({ path: p, sub: withSub }, T.rootTarget(p, sb, ans.direct))); });
         dirty = true;
         msg('Đã thêm ' + paths.length + ' folder' + (withSub ? ' (kèm sub-folder)' : ' (không kèm sub-folder)') +
           (linked ? ' → đồng bộ thẳng vào bin "' + sb.name + '" có sẵn' : ' → bin "' + (sb.name || 'gốc project') + '"') + '. Bấm OK để import.', 'ok');
@@ -402,20 +456,12 @@
     if (paths.length) addPaths(paths); else msg('Chỉ nhận folder', 'err');
   });
 
-  // Khoá trong config của một project đang mở: theo documentID, không có thì theo đường dẫn .prproj.
-  function keyFor(p) {
-    if (draft[p.documentID]) return p.documentID;
-    var want = String(p.path || '').toLowerCase();
-    var ks = Object.keys(draft);
-    for (var i = 0; i < ks.length; i++) {
-      if (want && String(draft[ks[i]].path || '').toLowerCase() === want) return ks[i];
-    }
-    return p.documentID;
-  }
+  // Khoá trong config của một project đang mở = documentID (không dò theo đường dẫn).
+  function keyFor(p) { return p.documentID; }
 
   function loadOpenProjects() {
     FS.command('projects', {}, 6000).then(function (list) {
-      if (Array.isArray(list)) { openProjects = list; render(); }
+      if (Array.isArray(list)) { openProjects = list; render(); loadBins(); }
     }, function () { /* engine chưa sẵn sàng → hiện tất cả */ });
   }
 
@@ -423,6 +469,7 @@
   loadOpenProjects();
   // Cửa sổ có thể được giữ lại giữa các lần mở → mỗi lần quay lại thì nạp dữ liệu mới
   // (folder vừa thả vào panel, bin engine vừa tạo), trừ khi đang có thay đổi chưa lưu.
+  setInterval(function () { if (!document.hidden) loadBins(); }, 4000);
   function refreshIfClean() { if (!dirty) reload(); loadOpenProjects(); }
   window.addEventListener('focus', refreshIfClean);
   document.addEventListener('visibilitychange', function () { if (!document.hidden) refreshIfClean(); });

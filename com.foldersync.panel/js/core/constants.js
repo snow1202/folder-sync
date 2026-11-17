@@ -66,12 +66,13 @@ module.exports = {
   ONLINE_TIMEOUT_MS: 3000,
   MAX_ERRORS: 3,
   ALIVE_EVERY_MS: 1500,   // panel chính phát "còn mở"
-  CHILD_TIMEOUT_MS: 6000, // panel con không nghe thấy quá lâu → tự đóng
+  CHILD_TIMEOUT_MS: 6000,
+  SAVEAS_WINDOW_MS: 90000, // Save As: project cũ đóng + bản mới mở trong khoảng này mới tính // panel con không nghe thấy quá lâu → tự đóng
   EVENTS,
   EXT_IDS: {
     MAIN: 'com.foldersync.panel.main',
     MANAGER: 'com.foldersync.panel.manager',
     ENGINE: 'com.foldersync.panel.engine',
   },
-  VERSION: '1.0.3',
+  VERSION: '1.0.4',
 };

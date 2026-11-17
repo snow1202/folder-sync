@@ -8,7 +8,7 @@ const P = require('../core/planner.js');
 const { scan: realScan } = require('../core/scanner.js');
 const { createStabilityTracker } = require('../core/stability.js');
 const { compileIgnored, isAllowedFile } = require('../core/filters.js');
-const { pathkey } = require('../core/pathkey.js');
+const { pathkey, isUnder } = require('../core/pathkey.js');
 const { findProject, ensureProject } = require('../core/config.js');
 const { autoRelink } = require('../core/drive.js');
 const { inferRoot, mapBins } = require('../core/linkbins.js');
@@ -38,7 +38,7 @@ function createEngine(opts) {
     emit: () => {},
     log: () => {},
     onImported: () => {},  // (items: [{at, docId, path, name, nodeId, bin}]) — ghi lịch sử
-    onRekey: () => {},     // (oldDocId, newDocId)
+    onSaveAs: () => {},    // (oldDocId, newDocId) — bản Save As vừa nhận danh sách folder của project cũ
     now: () => Date.now(),
     modeFor: () => 'poll',
     exists: defaultExists,
@@ -80,9 +80,11 @@ function createEngine(opts) {
     return { busy, lastSync, projects, autoSync: store.load().autoSync, version: C.VERSION, at: o.now() };
   }
 
+  const mediaSnap = {}; // docId → media lần đọc gần nhất (không bị xoá khi invalidate) — cho detectSaveAs
   async function refreshIndex(docId) {
     const list = await host.listMediaPaths(docId);
     proj(docId).index = new Set(list.map(pathkey));
+    mediaSnap[docId] = proj(docId).index;
   }
 
   // Ghi thay đổi của engine vào config MỚI NHẤT (manager có thể vừa sửa).
@@ -150,11 +152,6 @@ function createEngine(opts) {
     const cfg = store.load();
     const found = findProject(cfg, info);
     if (!found || !found.project.entries.length) return { files: 0, folders: 0, binNames: [] };
-    // documentID đổi (mở lại project) → ghi lại khoá mới để panel/manager khớp đúng.
-    if (found.key !== info.documentID) {
-      store.update((c) => { findProject(c, info); });
-      try { o.onRekey(found.key, info.documentID); } catch (e) { /* bỏ qua */ }
-    }
     let entries = found.project.entries;
     const filters = settingsFilters();
     const result = { files: 0, folders: 0, binNames: [] };
@@ -286,6 +283,44 @@ function createEngine(opts) {
     return result;
   }
 
+  // ---------------------------------------------------------------- Save As
+  // Save As cho project mới một documentID mới; project cũ đóng, bản mới mở ngay. Nhận ra khi giữa 2 lần
+  // liệt kê (≤ SAVEAS_WINDOW_MS): một project có folder theo dõi vừa đóng, một project chưa có folder vừa mở,
+  // và bản mới chứa gần như toàn bộ media của project cũ nằm trong các folder đó → chép danh sách folder sang.
+  // Project cũ giữ nguyên danh sách của nó (mở lại vẫn sync).
+  let prevOpen = null; // { at, ids: Map(docId → info) }
+  async function detectSaveAs(projects) {
+    const nowIds = new Map(projects.map((p) => [p.documentID, p]));
+    const prev = prevOpen;
+    prevOpen = { at: o.now(), ids: nowIds };
+    if (!prev || o.now() - prev.at > C.SAVEAS_WINDOW_MS) return;
+    const cfg = store.load();
+    const closed = [...prev.ids.keys()].filter((id) => !nowIds.has(id) && cfg.projects[id] && cfg.projects[id].entries.length);
+    const opened = projects.filter((p) => !prev.ids.has(p.documentID) && !(cfg.projects[p.documentID] && cfg.projects[p.documentID].entries.length));
+    if (!closed.length || !opened.length) return;
+    for (const info of opened) {
+      const media = new Set((await host.listMediaPaths(info.documentID)).map(pathkey));
+      for (const oldId of closed) {
+        const old = cfg.projects[oldId];
+        const roots = old.entries.filter((e) => !e.parentId).map((e) => e.path);
+        const before = mediaSnap[oldId];   // media của project cũ, đọc lúc nó còn mở
+        if (!before) continue;
+        const watched = [...before].filter((k) => roots.some((r) => k === pathkey(r) || isUnder(k, pathkey(r))));
+        if (!watched.length) continue;
+        const kept = watched.filter((k) => media.has(k)).length;
+        if (kept / watched.length < 0.9) continue;
+        store.update((c) => {
+          if (c.projects[info.documentID] && c.projects[info.documentID].entries.length) return;
+          c.projects[info.documentID] = { path: info.path || '', name: info.name || '', entries: JSON.parse(JSON.stringify(c.projects[oldId].entries)) };
+        });
+        o.log('Save As: ' + (old.name || oldId) + ' → ' + (info.name || info.documentID) + ' — đã chép ' + old.entries.length + ' folder theo dõi');
+        try { o.onSaveAs(oldId, info.documentID); } catch (e) { /* bỏ qua */ }
+        closed.splice(closed.indexOf(oldId), 1);
+        break;
+      }
+    }
+  }
+
   async function doSync(flags, onlyDocId) {
     abortFlag = false;
     // SYNC tay luôn đọc lại project: item user vừa xoá trong Premiere (file còn trên ổ)
@@ -293,6 +328,7 @@ function createEngine(opts) {
     if (flags.manual) for (const k of Object.keys(rt)) rt[k].index = null;
     let projects;
     try { projects = await host.listProjects(); } catch (e) { o.log('listProjects: ' + e.message); return null; }
+    try { await detectSaveAs(projects); } catch (e) { o.log('detectSaveAs: ' + e.message); }
     const total = { files: 0, folders: 0, binNames: [] };
     for (const info of projects) {
       if (onlyDocId && info.documentID !== onlyDocId) continue;
@@ -328,13 +364,13 @@ function createEngine(opts) {
 
     // Thêm folder (kéo-thả / nút Thêm). sel: bin đang chọn {nodeId, name} (hoặc chỉ nodeId).
     // Folder trùng tên bin đang chọn → đồng bộ thẳng vào bin đó. sub=false: chỉ file trực tiếp trong folder.
-    addFolders: (docId, paths, sel, sub) => enqueue(async () => {
+    addFolders: (docId, paths, sel, sub, direct) => enqueue(async () => {
       if (typeof sel !== 'object' || sel === null) sel = { nodeId: sel || null, name: '' };
       const info = (await host.listProjects()).find((p) => p.documentID === docId);
       if (!info) throw new Error('Không tìm thấy project');
       store.update((cfg) => {
         const p = ensureProject(cfg, info);
-        for (const abs of paths) T.addRoot(p.entries, Object.assign({ path: abs, sub: sub !== false }, T.rootTarget(abs, sel)));
+        for (const abs of paths) T.addRoot(p.entries, Object.assign({ path: abs, sub: sub !== false }, T.rootTarget(abs, sel, !!direct)));
       });
       return doSync({ manual: true, force: true }, docId);
     }),

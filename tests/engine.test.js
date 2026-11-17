@@ -67,12 +67,50 @@ test('folder trùng tên bin đang chọn → đồng bộ thẳng vào bin đó
   assert.equal(root.binNodeId, String(v2.nodeId));
 });
 
+test('chọn "sync thẳng" khi kéo folder khác tên bin → file vào thẳng bin đang chọn, không tạo bin mới', async () => {
+  const { disk, pr, engine } = setup();
+  mk(disk, 'AI/x.mp4'); mk(disk, 'AI/Sub/y.mp4');
+  const cdm = pr.rootItem.createBin('AI New CDM');
+  await engine.addFolders('d1', [path.join(disk, 'AI')], { nodeId: cdm.nodeId, name: 'AI New CDM' }, true, true);
+  assert.deepEqual(names(cdm), ['Sub', 'x.mp4']);
+});
+
 test('folder khác tên bin đang chọn → vẫn tạo bin mới bên trong như cũ', async () => {
   const { disk, pr, engine } = setup();
   mk(disk, 'Shoot/a.mov');
   const parent = pr.rootItem.createBin('v2');
   await engine.addFolders('d1', [path.join(disk, 'Shoot')], { nodeId: parent.nodeId, name: 'v2' });
   assert.deepEqual(names(parent), ['Shoot']);
+});
+
+test('Save As (ID mới, chứa đủ media cũ) → bản mới nhận danh sách folder; bản cũ giữ nguyên', async () => {
+  const { disk, pp, store, engine } = setup();
+  mk(disk, 'A/a.mov'); mk(disk, 'A/Sub/b.mov');
+  await engine.addFolders('d1', [path.join(disk, 'A')], null);
+  await engine.syncAll();                                   // lần liệt kê có d1
+  // Save As: d1 đóng, d2 mở với cùng media
+  pp.removeProject('d1');
+  const pr2 = pp.addProject('d2', path.join(disk, 'Proj copy.prproj'));
+  pr2.importFiles([path.join(disk, 'A/a.mov'), path.join(disk, 'A/Sub/b.mov')], true, pr2.rootItem);
+  await engine.syncAll();
+  const cfg = store.load();
+  assert.ok(cfg.projects.d1.entries.length, 'bản cũ giữ danh sách');
+  assert.equal(cfg.projects.d2.entries.length, cfg.projects.d1.entries.length, 'bản Save As nhận đủ danh sách');
+  assert.equal(cfg.projects.d2.name, 'Proj copy.prproj');
+});
+
+test('project mới tinh trùng tên + chỗ với project cũ → KHÔNG nhận danh sách, KHÔNG import gì', async () => {
+  const { disk, pp, store, engine } = setup();
+  mk(disk, 'A/a.mov');
+  await engine.addFolders('d1', [path.join(disk, 'A')], null);
+  await engine.syncAll();
+  pp.removeProject('d1');
+  const fresh = pp.addProject('d9', path.join(disk, 'Proj.prproj'));   // cùng đường dẫn, ID khác, chưa có media
+  const r = await engine.syncAll();
+  assert.equal(r.files, 0);
+  assert.equal(fresh.rootItem._kids.length, 0, 'không tạo bin / import gì vào project mới');
+  assert.ok(!store.load().projects.d9, 'project mới không có danh sách');
+  assert.ok(store.load().projects.d1.entries.length, 'danh sách vẫn ở project cũ');
 });
 
 test('thêm folder với sub=false → chỉ file trực tiếp, không tạo bin con', async () => {
@@ -266,16 +304,16 @@ test('label của folder gán cho bin và file mới', async () => {
   assert.equal(find(b, 'y.mov')._label, 6);
 });
 
-test('documentID đổi giữa 2 phiên → khớp theo đường dẫn và ghi lại khoá mới', async () => {
+test('config có danh sách dưới ID khác nhưng cùng đường dẫn → không đụng tới (chỉ khớp theo documentID)', async () => {
   const { disk, pr, engine, store } = setup();
   mk(disk, 'A/a.mov');
   store.update((c) => {
     c.projects.old = { path: pr.path, name: 'Proj.prproj', entries: [{ id: 'r', parentId: null, path: path.join(disk, 'A'), sub: true, label: -1, binNodeId: null, parentBinNodeId: null, excluded: [] }] };
   });
   const r = await engine.syncAll();
-  assert.equal(r.files, 1);
-  assert.ok(store.load().projects.d1);
-  assert.ok(!store.load().projects.old);
+  assert.equal(r.files, 0);
+  assert.ok(!store.load().projects.d1);
+  assert.ok(store.load().projects.old);
 });
 
 test('báo lại từng file đã import (tên, bin, nodeId) để ghi lịch sử', async () => {

@@ -82,3 +82,10 @@ test('rootTarget: folder trùng tên bin đang chọn → dùng luôn bin đó; 
   assert.deepEqual(T.rootTarget('/d/Shoot', { nodeId: 'n9', name: 'v2' }), { binNodeId: null, parentBinNodeId: 'n9', linked: false });
   assert.equal(T.rootTarget('/d/x', { nodeId: 'root', name: '' }).linked, false);
 });
+
+test('rootTarget: chọn "sync thẳng" → dùng bin đang chọn dù khác tên; gốc project vẫn tạo bin', () => {
+  const T = require('../com.foldersync.panel/js/core/tree.js');
+  assert.deepEqual(T.rootTarget('/d/AI', { nodeId: 'n5', name: 'AI New CDM' }, true), { binNodeId: 'n5', parentBinNodeId: null, linked: true });
+  assert.equal(T.rootTarget('/d/AI', { nodeId: 'n5', name: 'AI New CDM' }, false).linked, false);
+  assert.equal(T.rootTarget('/d/AI', { nodeId: 'root', name: '' }, true).linked, false);
+});

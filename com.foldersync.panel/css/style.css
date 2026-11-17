@@ -98,7 +98,7 @@ textarea:focus{outline:none;border-color:var(--accent-line)}
 .mtitle{font-weight:600;font-size:13px;letter-spacing:.03em;display:flex;align-items:center;gap:9px}
 .mnote{font-family:var(--mono);font-size:9.5px;color:var(--muted)}
 .table{flex:1;min-height:0;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px}
-.thead,.trow{display:grid;grid-template-columns:28px minmax(150px,1.1fr) minmax(200px,2.4fr) 46px 120px 34px;align-items:center}
+.thead,.trow{display:grid;grid-template-columns:28px minmax(130px,1fr) minmax(170px,1.9fr) minmax(150px,1.4fr) 46px 120px 34px;align-items:center}
 .thead{position:sticky;top:0;z-index:2;background:var(--panel);border-bottom:1px solid var(--line);font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase}
 .thead>div{padding:9px 8px}
 .pgroup{display:flex;align-items:center;gap:6px;padding:8px 10px;font-size:11.5px;color:var(--txt-dim);background:var(--panel-2);border-bottom:1px solid var(--line-soft)}
@@ -237,7 +237,8 @@ textarea:focus{outline:none;border-color:var(--accent-line)}
 .ask-btns{display:flex;flex-direction:column;gap:6px;margin-top:4px}
 .ask-btns .btn{justify-content:center}
 .ask-note{font-size:10.5px;color:var(--muted)}
-.ask-foot{display:flex;justify-content:flex-end}
+.ask-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:6px}
+.ask-foot .btn{min-width:72px;justify-content:center}
 .subpick{font-size:11.5px;white-space:nowrap}
 .ask-box.warn{border-color:#6b5317}
 .ask-box.warn .ask-title{color:#f3d48a}
@@ -261,3 +262,20 @@ textarea:focus{outline:none;border-color:var(--accent-line)}
 
 /* nhắc sau khi bấm một dòng đã import */
 .rhint{margin:0 0 8px;padding:7px 10px;border:1px solid #6b5317;background:#2a2210;border-radius:8px;color:#f3d48a;font-size:11px;line-height:1.45}
+
+/* hộp hỏi: chọn đích (sync thẳng / tạo bin bên trong) */
+.ask-pick{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.ask-opt{text-align:left;font-size:11.5px;color:var(--txt-dim);background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer;white-space:normal}
+.ask-opt:hover{border-color:var(--accent-line);color:var(--txt)}
+.ask-opt.on{color:var(--accent);border-color:var(--accent);background:linear-gradient(180deg,var(--accent-btn-a),var(--accent-btn-b))}
+.ask-opt.on:before{content:"● ";}
+.ask-sub{font-weight:600;font-size:12px;margin-top:8px}
+
+/* Watch Folders: cột BIN — folder đang đổ vào bin nào */
+.bincell{font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;direction:rtl;text-align:left;border-radius:5px;padding:4px 6px;border:1px solid transparent}
+.bincell .ltr{direction:ltr;unicode-bidi:isolate}
+.bincell.ok{color:var(--accent-soft);cursor:pointer}
+.bincell.ok:hover{border-color:var(--accent-line);color:var(--accent)}
+.bincell.wait{color:var(--muted);font-style:italic}
+.bincell.pend{color:var(--amber)}
+.bincell.lost{color:#f0b3a6}

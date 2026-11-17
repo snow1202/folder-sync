@@ -132,3 +132,15 @@ test('FS_revealItem: chọn clip; clip không chọn được thì chọn bin ch
   assert.equal(pp.selected.at(-1), bin.nodeId);
   assert.equal(pp.host('FS_revealItem', 'd1', '424242'), 'missing');
 });
+
+test('FS_binPaths: đường dẫn bin theo nodeId; bin đã xoá không có trong kết quả; gốc = ""', () => {
+  const pp = createPremiere();
+  const pr = pp.addProject('d1', '/p/A.prproj');
+  const src = pr.rootItem.createBin('Source');
+  const kling = src.createBin('Kling AI');
+  const r = pp.host('FS_binPaths', 'd1', [kling.nodeId, src.nodeId, 'khong-co', pr.rootItem.nodeId]);
+  assert.equal(r[kling.nodeId], 'Source › Kling AI');
+  assert.equal(r[src.nodeId], 'Source');
+  assert.equal(r[pr.rootItem.nodeId], '');
+  assert.ok(!('khong-co' in r));
+});

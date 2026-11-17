@@ -128,11 +128,11 @@ function sameBinName(a, b) {
 }
 
 // Bin cho folder gốc mới thêm. sel = bin đang chọn {nodeId, name}.
-// Folder trùng tên bin đang chọn → dùng luôn bin đó (đồng bộ vào bin có sẵn, không tạo bin con cùng tên);
-// ngược lại → tạo bin mới bên trong bin đang chọn.
-function rootTarget(absPath, sel) {
+// direct (người dùng chọn "sync thẳng") hoặc folder trùng tên bin đang chọn → dùng luôn bin đó;
+// ngược lại → tạo bin mới cùng tên folder bên trong bin đang chọn. Gốc project (name rỗng) luôn tạo bin.
+function rootTarget(absPath, sel, direct) {
   const name = path.basename(String(absPath).replace(/\/+$/, ''));
-  if (sel && sel.nodeId && sameBinName(name, sel.name)) return { binNodeId: String(sel.nodeId), parentBinNodeId: null, linked: true };
+  if (sel && sel.nodeId && sel.name && (direct || sameBinName(name, sel.name))) return { binNodeId: String(sel.nodeId), parentBinNodeId: null, linked: true };
   return { binNodeId: null, parentBinNodeId: (sel && sel.nodeId) ? String(sel.nodeId) : null, linked: false };
 }
 

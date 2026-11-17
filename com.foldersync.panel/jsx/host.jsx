@@ -324,6 +324,34 @@ function FS_revealItem(argsJson) {
   }, argsJson);
 }
 
+// [docId, nodeIds] → {nodeId: "Bin › Bin con"} cho những bin còn tồn tại ("" = gốc project).
+// Dùng cho cột BIN của Watch Folders: folder nào đang đổ vào bin nào.
+function FS_binPaths(argsJson) {
+  return FS_wrap(function (a) {
+    var project = FS_projectById(a[0]);
+    var ids = a[1] || [];
+    var want = {};
+    for (var i = 0; i < ids.length; i++) { if (ids[i]) { want[String(ids[i])] = true; } }
+    var out = {};
+    var rootId = String(project.rootItem.nodeId);
+    if (want[rootId]) { out[rootId] = ''; }
+    function walkBins(item, trail) {
+      var kids = item.children;
+      if (!kids) { return; }
+      for (var j = 0; j < kids.numItems; j++) {
+        var k = kids[j];
+        if (!FS_isBin(k)) { continue; }
+        var t = trail.concat([String(k.name)]);
+        var id = String(k.nodeId);
+        if (want[id]) { out[id] = t.join(' › '); }
+        walkBins(k, t);
+      }
+    }
+    walkBins(project.rootItem, []);
+    return out;
+  }, argsJson);
+}
+
 // [message] → thông báo trong Events panel của Premiere.
 function FS_notify(argsJson) {
   return FS_wrap(function (a) {

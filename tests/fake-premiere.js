@@ -97,6 +97,7 @@ function createPremiere(opts) {
   return {
     app, events, selected, host, TYPE, makeItem,
     addProject(id, p) { const pr = makeProject(id, p); projects.push(pr); return pr; },
+    removeProject(id) { const i = projects.findIndex((x) => x.documentID === id); if (i >= 0) projects.splice(i, 1); },
     select(items) { selection = items; },
     walk(item, fn) { fn(item); for (const k of item._kids) this.walk(k, fn); },
   };

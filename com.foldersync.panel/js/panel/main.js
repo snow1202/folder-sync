@@ -322,13 +322,11 @@
         return;
       }
       // Hỏi trước: lấy cả sub-folder hay chỉ file nằm trực tiếp trong folder.
-      // Folder trùng tên bin đang chọn → engine đồng bộ thẳng vào bin đó (không tạo bin con cùng tên).
-      var T = FS.load('js/core/tree.js');
-      var linked = lastSel && paths.some(function (p) { return T.rootTarget(p, lastSel).linked; });
-      FS_ASK.sub(paths, $('target-bin').textContent + (linked ? ' (bin có sẵn cùng tên — đồng bộ thẳng vào bin này)' : '')).then(function (sub) {
-        if (sub === null) return;
+      // Đang chọn bin: trùng tên folder → sync thẳng vào bin đó; khác tên → hộp hỏi cho chọn sync thẳng / tạo bin bên trong.
+      FS_ASK.sub(paths, $('target-bin').textContent, { binName: lastSel ? lastSel.name : '' }).then(function (ans) {
+        if (ans === null) return;
         setStatus('busy', 'Đang thêm ' + paths.length + ' folder…');
-        FS.command('add', { paths: paths, sub: sub }).then(function (r) {
+        FS.command('add', { paths: paths, sub: ans.sub, direct: ans.direct }).then(function (r) {
           if (r) setStatus('ok', '+' + r.files + ' file · ' + paths.length + ' folder mới');
         }, function (err) { setStatus('err', err.message); });
       });

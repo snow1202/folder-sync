@@ -33,6 +33,7 @@ function createBridge(csInterface) {
     relinkMedia: (docId, oldRoot, newRoot) => call('FS_relinkMedia', docId, oldRoot, newRoot),
     notify: (msg) => call('FS_notify', msg),
     revealItem: (docId, nodeId) => call('FS_revealItem', docId, nodeId),
+    binPaths: (docId, nodeIds) => call('FS_binPaths', docId, nodeIds),
   };
 }
 

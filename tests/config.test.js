@@ -54,15 +54,12 @@ test('update đọc lại bản mới nhất nên 2 lần update không đè nha
   assert.equal(c.settings.notifications, false);
 });
 
-test('findProject: theo documentID, rồi theo path (đổi key sang ID mới)', () => {
+test('findProject: CHỈ theo documentID — project khác ID ở cùng đường dẫn là project khác', () => {
   const c = defaultConfig();
   ensureProject(c, { documentID: 'old', path: '/p/A.prproj', name: 'A.prproj' });
   assert.equal(findProject(c, { documentID: 'old' }).key, 'old');
-  const r = findProject(c, { documentID: 'new', path: '/P/a.prproj' });
-  assert.equal(r.key, 'new');
-  assert.ok(!c.projects.old);
-  assert.ok(c.projects.new);
-  assert.equal(findProject(c, { documentID: 'x', path: '/other.prproj' }), null);
+  assert.equal(findProject(c, { documentID: 'new', path: '/p/A.prproj' }), null, 'project mới tạo trùng tên/chỗ không được nhận danh sách cũ');
+  assert.ok(c.projects.old, 'không đổi khoá');
 });
 
 test('ensureProject tạo mới với entries rỗng và cập nhật path/name', () => {
